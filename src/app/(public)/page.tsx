@@ -1,8 +1,18 @@
+import { getRandomProducts } from '@/actions/product'
 import { Link } from '@/components/link'
+import { Product } from '@/components/product'
 import { Button } from '@/components/ui/button'
 import { APP_DESCRIPTION } from '@/utils/constants/brand'
 
-export default function Page() {
+async function getProducts() {
+  const [products, err] = await getRandomProducts()
+  if (err) return []
+  return products
+}
+
+export default async function Page() {
+  const products = await getProducts()
+
   return (
     <main>
       <section className='grid grid-cols-2 items-center gap-2 min-h-[40vh]'>
@@ -19,6 +29,15 @@ export default function Page() {
           </div>
         </div>
         <div>Banner</div>
+      </section>
+
+      <section>
+        <h1>Recommendations</h1>
+        <div className='grid grid-cols-1 md:grid-cols-3'>
+          {products.map((p) => (
+            <Product key={p._id} {...p} viewAsCard />
+          ))}
+        </div>
       </section>
     </main>
   )

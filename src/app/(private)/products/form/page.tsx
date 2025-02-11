@@ -3,7 +3,6 @@
 import { createProduct } from '@/actions/product'
 import { Fieldset } from '@/components/fieldset'
 import { Column, Grid } from '@/components/grid'
-import { Link } from '@/components/link'
 import { Product } from '@/components/product'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,6 +13,7 @@ import { categories } from '@/utils/categories'
 import { cn } from '@/utils/cn'
 import { requiredField } from '@/utils/messages'
 import { Trash } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { Fragment } from 'react'
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form'
 import slugify from 'slugify'
@@ -31,6 +31,7 @@ const defaultValues = {
 }
 
 export default function Page() {
+  const { push } = useRouter()
   const { control, register, formState, handleSubmit, setValue } = useForm({ defaultValues })
   const name = useWatch({ control, name: 'name' })
   const price = useWatch({ control, name: 'price' })
@@ -45,9 +46,10 @@ export default function Page() {
   const createProductAction = useServerAction(createProduct, {
     onSuccess: () => {
       toast.success('Success!')
+      push('/products')
     },
     onError: () => {
-      toast.error('Error.')
+      toast.error('Failed. Try again later.')
     },
   })
 
@@ -191,9 +193,7 @@ export default function Page() {
               Cancel
             </Button>
 
-            <Link href='/products/form'>
-              <Button type='submit'>Save product</Button>
-            </Link>
+            <Button type='submit'>Save product</Button>
           </Column>
         </Grid>
       </form>

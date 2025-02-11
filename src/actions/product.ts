@@ -18,6 +18,12 @@ export const getProductBySlug = createServerAction()
     return parseData(product)
   })
 
+export const getUserProducts = authProcedure.handler(async ({ ctx }) => {
+  const products = await db.product.find({ user: ctx.user._id }).populate<{ user: UserSchema }>('user').lean()
+
+  return parseData(products)
+})
+
 export const createProduct = authProcedure
   .input(
     z.object({
@@ -26,14 +32,18 @@ export const createProduct = authProcedure
       characteristics: z.array(z.object({ label: z.string(), value: z.string() })),
       content: z.string().nonempty(),
       name: z.string().nonempty(),
-      price: z.number().min(200),
+      price: z.string().nonempty(),
       cover: z.string().nullable(),
     } as Record<keyof ProductSchema, any>),
   )
-  .handler(async ({ input }) => {
-    const product = await db.product.findOne({ slug: input.slug }).populate<{ user: UserSchema }>('user').lean()
-
-    if (!product) throw new Error('Not found')
+  .handler(async ({ ctx, input }) => {
+    const product = await db.product.create({ ...input, price: Number(input.price), user: ctx.user._id })
 
     return parseData(product)
   })
+
+export const getRandomProducts = createServerAction().handler(async () => {
+  const products = await db.product.find().populate<{ user: UserSchema }>('user').limit(9).lean()
+
+  return parseData(products)
+})

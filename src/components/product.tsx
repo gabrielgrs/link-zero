@@ -1,6 +1,7 @@
 import { ProductSchema } from '@/libs/mongoose/schemas/product'
 import { UserSchema } from '@/libs/mongoose/schemas/user'
 import { categories } from '@/utils/categories'
+import { cn } from '@/utils/cn'
 import { Link } from './link'
 import { Button } from './ui/button'
 
@@ -12,11 +13,12 @@ export function Product({
   content,
   characteristics,
   category,
-}: Omit<ProductSchema, '_id' | 'user' | 'createdAt' | 'updatedAt'> & { user: UserSchema }) {
+  viewAsCard = false,
+}: Omit<ProductSchema, '_id' | 'user' | 'createdAt' | 'updatedAt'> & { user: UserSchema; viewAsCard?: boolean }) {
   return (
     <div className='border'>
       <div
-        className='h-40 bg-foreground/5 w-full'
+        className={cn('h-40 bg-foreground/5 w-full', viewAsCard && 'h-24')}
         style={{
           backgroundImage: `url(${cover})`,
           objectFit: 'cover',
@@ -24,13 +26,15 @@ export function Product({
           backgroundSize: '100%',
         }}
       />
-      <div className='h-20 flex items-center pl-8 border'>
-        <h1>{name}</h1>
+      <div className={cn('h-20 flex items-center pl-8 border', viewAsCard && 'pl-0 justify-center')}>
+        <h1 className={viewAsCard ? 'text-lg' : ''}>{name}</h1>
       </div>
-      <div className='grid grid-cols-[auto,320px]'>
+      <div className={cn('grid grid-cols-[auto,320px]', viewAsCard && 'grid-cols-1')}>
         <div>
           <div className='grid grid-cols-[max-content,auto] border-b'>
-            <div className='border-r p-4'>{price}</div>
+            <div className='border-r p-4'>
+              {price ? Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price / 100) : 'Free'}
+            </div>
             <div className='p-4 text-muted-foreground'>
               <Link href={`/user/${user.username}`}>{user.name}</Link>
             </div>
@@ -46,11 +50,12 @@ export function Product({
                   <strong>Category</strong> {categories[category]}
                 </li>
               )}
-              {characteristics.map(({ label, value }) => (
-                <li key={`${label}_${value}`} className='flex justify-between items-center'>
-                  <strong>{label}</strong> {value}
-                </li>
-              ))}
+              {!viewAsCard &&
+                characteristics.map(({ label, value }) => (
+                  <li key={`${label}_${value}`} className='flex justify-between items-center'>
+                    <strong>{label}</strong> {value}
+                  </li>
+                ))}
             </ul>
           </div>
           <Button type='button' className='w-full'>
