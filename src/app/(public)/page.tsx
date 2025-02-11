@@ -3,6 +3,7 @@ import { Link } from '@/components/link'
 import { Product } from '@/components/product'
 import { Button } from '@/components/ui/button'
 import { APP_DESCRIPTION } from '@/utils/constants/brand'
+import { Salles } from './salles'
 
 async function getProducts() {
   const [products, err] = await getRandomProducts()
@@ -15,7 +16,7 @@ export default async function Page() {
 
   return (
     <main>
-      <section className='grid grid-cols-2 items-center gap-2 min-h-[40vh]'>
+      <section className='grid grid-cols-1 md:grid-cols-2 items-center gap-2 min-h-[60vh] py-12'>
         <div className='space-y-4 py-8'>
           <p>Badge</p>
           <h1>{APP_DESCRIPTION}</h1>
@@ -28,7 +29,7 @@ export default async function Page() {
             </Link>
           </div>
         </div>
-        <div>Banner</div>
+        <Salles />
       </section>
 
       <section>
