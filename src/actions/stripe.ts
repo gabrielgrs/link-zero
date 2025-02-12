@@ -56,6 +56,7 @@ export const createCheckout = createServerAction()
 
     const product = await db.product.findOne({ _id: input.productId })
     if (!product) throw new Error('Not found')
+    await db.product.updateOne({ _id: product._id }, { $push: { sales: { user: user._id, price: product.price } } })
 
     const { url } = await stripeClient.checkout.sessions.create({
       payment_method_types: ['card'],

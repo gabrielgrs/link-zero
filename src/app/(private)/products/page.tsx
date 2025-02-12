@@ -45,9 +45,11 @@ export default async function Page() {
                         />
                       </div>
                     </TableCell>
-                    <TableCell>0</TableCell>
+                    <TableCell>{item.sales.length}</TableCell>
                     <TableCell>
-                      {Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(item.price / 100)}
+                      {Intl.NumberFormat('en-US', { style: 'currency', currency: item.currency.toUpperCase() }).format(
+                        item.price / 100,
+                      )}
                     </TableCell>
                     <TableCell className='text-right'>
                       <DropdownMenu>

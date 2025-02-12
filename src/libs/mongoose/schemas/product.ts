@@ -7,6 +7,7 @@ type SaleSchema = {
   _id: string
   user: Types.ObjectId
   status: 'pending' | 'success' | 'failure'
+  price: number
   createdAt: Date
   updatedAt: Date
 }
@@ -39,6 +40,10 @@ const saleSchema = new Schema<SaleSchema>({
     type: String,
     required: true,
     enum: ['pending', 'success', 'failure'],
+  },
+  price: {
+    type: Number,
+    required: true,
   },
 })
 
