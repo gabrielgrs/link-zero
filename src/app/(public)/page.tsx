@@ -34,7 +34,7 @@ export default async function Page() {
 
       <section>
         <h1>Recommendations</h1>
-        <div className='grid grid-cols-1 md:grid-cols-3'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
           {products.map((p) => (
             <Product key={p._id} {...p} viewAsCard />
           ))}

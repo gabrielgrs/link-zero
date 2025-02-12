@@ -55,7 +55,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         <div className={cn('relative z-10')}>
-          {children}
+          <div className={cn('flex items-center gap-1', loading ? 'opacity-0' : 'opacity-100')}>{children}</div>
           {loading && (
             <div className='absolute left-0 top-0 bg-inherit'>
               <Loader2 size={20} className='animate-spin' />
@@ -66,6 +66,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     )
   },
 )
+
 Button.displayName = 'Button'
 
 export { Button, buttonVariants }

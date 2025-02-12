@@ -1,4 +1,5 @@
 import { categories } from '@/utils/categories'
+import { Currency, currencies } from '@/utils/constants/currencies'
 import { Schema, Types } from 'mongoose'
 import { createMongooseSchema } from '../helpers'
 
@@ -7,11 +8,14 @@ export type ProductSchema = {
   name: string
   slug: string
   cover?: string
+  currency: Currency
   price: number
   content: string
   user: Types.ObjectId
   characteristics: { label: string; value: string }[]
   category: keyof typeof categories
+  stripeProductId: string
+  stripePriceId: string
   createdAt: Date
   updatedAt: Date
 }
@@ -32,6 +36,11 @@ export const product = createMongooseSchema<ProductSchema>(
       cover: {
         type: String,
         required: false,
+      },
+      currency: {
+        type: String,
+        required: true,
+        enum: currencies,
       },
       price: {
         type: Number,
@@ -54,6 +63,16 @@ export const product = createMongooseSchema<ProductSchema>(
         type: String,
         required: true,
         enum: Object.keys(categories),
+      },
+      stripeProductId: {
+        type: String,
+        required: true,
+        unique: true,
+      },
+      stripePriceId: {
+        type: String,
+        required: true,
+        unique: true,
       },
     },
     {

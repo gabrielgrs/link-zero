@@ -7,6 +7,7 @@ export type UserSchema = {
   username: string
   email: string
   role: 'USER' | 'ADMIN'
+  stripeCustomerId: string
   createdAt: Date
   updatedAt: Date
 }
@@ -32,6 +33,11 @@ export const user = createMongooseSchema<UserSchema>(
         required: true,
         minlength: 3,
         maxlength: 32,
+      },
+      stripeCustomerId: {
+        type: String,
+        required: true,
+        unique: true,
       },
     },
     {

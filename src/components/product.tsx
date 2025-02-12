@@ -1,9 +1,22 @@
+'use client'
+
 import { ProductSchema } from '@/libs/mongoose/schemas/product'
 import { UserSchema } from '@/libs/mongoose/schemas/user'
 import { categories } from '@/utils/categories'
 import { cn } from '@/utils/cn'
+import { useState } from 'react'
 import { Link } from './link'
 import { Button } from './ui/button'
+import { Input } from './ui/input'
+import { Label } from './ui/label'
+
+type Props = Omit<ProductSchema, '_id' | 'user' | 'stripePriceId' | 'stripeProductId' | 'createdAt' | 'updatedAt'> & {
+  user: UserSchema
+  viewAsCard?: boolean
+  onSubmit?: (email: string) => void
+  isSubmitting?: boolean
+  initialEmail?: string
+}
 
 export function Product({
   name,
@@ -13,8 +26,15 @@ export function Product({
   content,
   characteristics,
   category,
+  currency,
+  slug,
   viewAsCard = false,
-}: Omit<ProductSchema, '_id' | 'user' | 'createdAt' | 'updatedAt'> & { user: UserSchema; viewAsCard?: boolean }) {
+  initialEmail = '',
+  isSubmitting,
+  onSubmit,
+}: Props) {
+  const [email, setEmail] = useState(initialEmail)
+
   return (
     <div className='border'>
       <div
@@ -33,7 +53,11 @@ export function Product({
         <div>
           <div className='grid grid-cols-[max-content,auto] border-b'>
             <div className='border-r p-4'>
-              {price ? Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price / 100) : 'Free'}
+              {price
+                ? Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(
+                    price / 100,
+                  )
+                : 'Free'}
             </div>
             <div className='p-4 text-muted-foreground'>
               <Link href={`/user/${user.username}`}>{user.name}</Link>
@@ -41,10 +65,10 @@ export function Product({
           </div>
           {content && <p className='p-4'>{content}</p>}
         </div>
-        <div className='border-l p-2 space-y-4'>
+        <div className='border-l space-y-4'>
           <div>
             <h3 className='text-center'>Details</h3>
-            <ul className='space-y-2 mt-4 text-sm'>
+            <ul className='space-y-2 mt-4 text-sm p-2'>
               {category && (
                 <li className='flex justify-between items-center'>
                   <strong>Category</strong> {categories[category]}
@@ -58,9 +82,29 @@ export function Product({
                 ))}
             </ul>
           </div>
-          <Button type='button' className='w-full'>
-            Buy now
-          </Button>
+          {!viewAsCard && (
+            <div className='border-t p-2'>
+              <Label>Buyer email</Label>
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder='Type your e-mail' />
+            </div>
+          )}
+          <div className='px-2 pb-2'>
+            {viewAsCard ? (
+              <Button type='button' className='w-full' loading={isSubmitting}>
+                <Link href={`/product/${slug}`}>Buy now</Link>
+              </Button>
+            ) : (
+              <Button
+                type='button'
+                className='w-full'
+                loading={isSubmitting}
+                onClick={() => onSubmit?.(email)}
+                disabled={!email}
+              >
+                Buy now
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>

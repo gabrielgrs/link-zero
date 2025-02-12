@@ -7,10 +7,12 @@ import { Product } from '@/components/product'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/hooks/use-auth'
 import { categories } from '@/utils/categories'
 import { cn } from '@/utils/cn'
+import { Currency, currencies } from '@/utils/constants/currencies'
 import { requiredField } from '@/utils/messages'
 import { Trash } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -26,6 +28,7 @@ const defaultValues = {
   content: '',
   price: 0,
   category: '',
+  currency: '' as Currency | '',
   characteristics: [] as { label: string; value: string }[],
   slug: '',
 }
@@ -35,6 +38,7 @@ export default function Page() {
   const { control, register, formState, handleSubmit, setValue } = useForm({ defaultValues })
   const name = useWatch({ control, name: 'name' })
   const price = useWatch({ control, name: 'price' })
+  const currency = useWatch({ control, name: 'currency' })
   const cover = useWatch({ control, name: 'cover' })
   const category = useWatch({ control, name: 'category' })
   const content = useWatch({ control, name: 'content' })
@@ -98,13 +102,40 @@ export default function Page() {
             </Fieldset>
           </Column>
 
-          <Column size={8}>
+          <Column size={7}>
             <Fieldset label='Name' error={formState.errors.name?.message}>
               <Input {...register('name', { required: requiredField })} placeholder='Type the product name' />
             </Fieldset>
           </Column>
 
-          <Column size={4}>
+          <Column size={3}>
+            <Fieldset label='Product category' error={formState.errors.category?.message}>
+              <Controller
+                control={control}
+                name='category'
+                render={({ field }) => {
+                  return (
+                    <Select onValueChange={(e) => field.onChange(e)}>
+                      <SelectTrigger className='w-full'>
+                        <SelectValue placeholder='Select' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {currencies.map((c) => {
+                          return (
+                            <SelectItem key={c} value={c}>
+                              {c}
+                            </SelectItem>
+                          )
+                        })}
+                      </SelectContent>
+                    </Select>
+                  )
+                }}
+              />
+            </Fieldset>
+          </Column>
+
+          <Column size={3}>
             <Fieldset label='Product price' error={formState.errors.price?.message}>
               <Input {...register('price', { required: requiredField })} placeholder='Type the product price' />
             </Fieldset>
@@ -144,10 +175,16 @@ export default function Page() {
               {characteristicsFieldArray.fields.map((f, index) => (
                 <Fragment key={f.id}>
                   <Column size={5}>
-                    <Input {...register(`characteristics.${index}.label`)} placeholder='Label' />
+                    <Input
+                      {...register(`characteristics.${index}.label`, { required: requiredField })}
+                      placeholder='Label'
+                    />
                   </Column>
                   <Column size={5}>
-                    <Input {...register(`characteristics.${index}.value`)} placeholder='' />
+                    <Input
+                      {...register(`characteristics.${index}.value`, { required: requiredField })}
+                      placeholder='value'
+                    />
                   </Column>
                   <Column size={2}>
                     <Button type='button' variant='destructive'>
@@ -175,6 +212,7 @@ export default function Page() {
           <Column size={12}>
             <Product
               name={name}
+              currency={currency as Currency}
               price={price}
               cover={cover}
               user={user}
