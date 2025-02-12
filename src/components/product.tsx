@@ -52,7 +52,7 @@ export function Product({
       <div className={cn('h-20 flex items-center pl-8 border', viewAsCard && 'pl-0 justify-center')}>
         <h1 className={viewAsCard ? 'text-lg' : ''}>{name}</h1>
       </div>
-      <div className={cn('grid grid-cols-1 md:grid-cols-[auto,320px]', viewAsCard && 'grid-cols-1')}>
+      <div className={cn('grid grid-cols-1 md:grid-cols-[auto,320px]', viewAsCard && 'grid-cols-1 md:grid-cols-1')}>
         <div>
           <div className='grid grid-cols-[max-content,auto] border-b'>
             <div className='border-r p-4'>
