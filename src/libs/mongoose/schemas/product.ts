@@ -40,10 +40,12 @@ const saleSchema = new Schema<SaleSchema>({
     type: String,
     required: true,
     enum: ['pending', 'success', 'failure'],
+    default: 'pending'
   },
   price: {
     type: Number,
     required: true,
+    immutable: true,
   },
 })
 
