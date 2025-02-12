@@ -10,7 +10,10 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
 
-type Props = Omit<ProductSchema, '_id' | 'user' | 'stripePriceId' | 'stripeProductId' | 'createdAt' | 'updatedAt'> & {
+type Props = Omit<
+  ProductSchema,
+  '_id' | 'user' | 'sales' | 'stripePriceId' | 'stripeProductId' | 'createdAt' | 'updatedAt'
+> & {
   user: UserSchema
   viewAsCard?: boolean
   onSubmit?: (email: string) => void
@@ -49,11 +52,11 @@ export function Product({
       <div className={cn('h-20 flex items-center pl-8 border', viewAsCard && 'pl-0 justify-center')}>
         <h1 className={viewAsCard ? 'text-lg' : ''}>{name}</h1>
       </div>
-      <div className={cn('grid grid-cols-[auto,320px]', viewAsCard && 'grid-cols-1')}>
+      <div className={cn('grid grid-cols-1 md:grid-cols-[auto,320px]', viewAsCard && 'grid-cols-1')}>
         <div>
           <div className='grid grid-cols-[max-content,auto] border-b'>
             <div className='border-r p-4'>
-              {price
+              {price && currency
                 ? Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(
                     price / 100,
                   )

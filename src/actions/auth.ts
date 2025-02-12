@@ -2,6 +2,7 @@
 import { createToken } from '@/libs/jose'
 import { db } from '@/libs/mongoose'
 import { sendEmailAsParagraphs } from '@/libs/resend'
+import { createOrFindCustomerByEmail } from '@/libs/stripe/utils'
 import { parseData } from '@/utils/action'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -15,14 +16,25 @@ type RequiredUserFields = {
   username?: string
 }
 
-async function createOrFindUser(email: string, fields: RequiredUserFields) {
+export async function createOrFindUser(email: string, fields: RequiredUserFields) {
   const user = await db.user.findOne({ email })
   if (user) return user
 
-  if (!fields.name) return 'SHOULD_REGISTER'
-  if (!fields.username) return 'SHOULD_REGISTER'
+  if (!fields.username) return null
 
-  return db.user.create({ email, name: fields.name, username: fields.username })
+  const customer = await createOrFindCustomerByEmail(email)
+
+  return db.user.create({
+    email,
+    name: fields.name,
+    username: slugify(fields.username ?? '', {
+      lower: true,
+      strict: true,
+      replacement: '-',
+      trim: false,
+    }),
+    stripeCustomerId: customer.id,
+  })
 }
 
 export const authenticate = createServerAction()
@@ -37,17 +49,12 @@ export const authenticate = createServerAction()
   .handler(async ({ input }): Promise<{ status: 'AUTHORIZED' | 'WAITING_FOR_CODE' | 'SHOULD_REGISTER' }> => {
     const userCreationResponse = await createOrFindUser(input.email, {
       name: input.name,
-      username: slugify(input.username ?? '', {
-        lower: true,
-        strict: true,
-        replacement: '-',
-        trim: false,
-      }),
+      username: input.username,
     })
 
-    if (typeof userCreationResponse === 'string')
+    if (!userCreationResponse)
       return {
-        status: userCreationResponse,
+        status: 'SHOULD_REGISTER',
       }
 
     if (!userCreationResponse) {

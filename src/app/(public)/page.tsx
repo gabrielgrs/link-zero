@@ -3,7 +3,7 @@ import { Link } from '@/components/link'
 import { Product } from '@/components/product'
 import { Button } from '@/components/ui/button'
 import { APP_DESCRIPTION } from '@/utils/constants/brand'
-import { Salles } from './salles'
+import { Sales } from './sales'
 
 async function getProducts() {
   const [products, err] = await getRandomProducts()
@@ -29,7 +29,7 @@ export default async function Page() {
             </Link>
           </div>
         </div>
-        <Salles />
+        <Sales />
       </section>
 
       <section>

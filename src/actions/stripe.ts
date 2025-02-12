@@ -2,11 +2,11 @@
 
 import { db } from '@/libs/mongoose'
 import stripeClient from '@/libs/stripe'
-import { createOrFindCustomerByEmail } from '@/libs/stripe/utils'
 import { currencies } from '@/utils/constants/currencies'
 import { headers } from 'next/headers'
 import { z } from 'zod'
 import { createServerAction } from 'zsa'
+import { createOrFindUser } from './auth'
 import { authProcedure } from './procedures'
 
 export async function getDomain() {
@@ -51,20 +51,24 @@ export const createCheckout = createServerAction()
   .handler(async ({ input }) => {
     const domain = await getDomain()
 
-    const customer = await createOrFindCustomerByEmail(input.email)
+    const user = await createOrFindUser(input.email, { username: input.email.split('@')[0] })
+    if (!user) throw new Error('User is required')
 
     const product = await db.product.findOne({ _id: input.productId })
     if (!product) throw new Error('Not found')
 
     const { url } = await stripeClient.checkout.sessions.create({
       payment_method_types: ['card'],
-      client_reference_id: customer.id,
+      client_reference_id: user._id,
       success_url: `${domain}/subscription?type=success`,
       cancel_url: `${domain}/subscription?type=failure`,
-      mode: 'subscription',
+      mode: 'payment',
       currency: product.currency,
       line_items: [{ price: product.stripePriceId, quantity: 1 }],
-      customer: customer.id,
+      customer: user.stripeCustomerId,
+      metadata: {
+        productId: product._id,
+      },
     })
 
     if (!url) throw new Error('Failed to process your request')

@@ -45,6 +45,7 @@ export default function Page() {
   const slug = useWatch({ control, name: 'slug' })
   const characteristics = useWatch({ control, name: 'characteristics' })
   const characteristicsFieldArray = useFieldArray({ control, name: 'characteristics' })
+
   const { user } = useAuth()
 
   const createProductAction = useServerAction(createProduct, {
@@ -109,10 +110,10 @@ export default function Page() {
           </Column>
 
           <Column size={3}>
-            <Fieldset label='Product category' error={formState.errors.category?.message}>
+            <Fieldset label='Price currency' error={formState.errors.category?.message}>
               <Controller
                 control={control}
-                name='category'
+                name='currency'
                 render={({ field }) => {
                   return (
                     <Select onValueChange={(e) => field.onChange(e)}>

@@ -23,7 +23,8 @@ export function ProductClient({ product }: Props) {
       toast.success('We are redirecting you to the payment...')
       return push(data.url)
     },
-    onError: () => {
+    onError: (err) => {
+      console.error(err.err)
       toast.error('Failed. Try again later.')
     },
   })

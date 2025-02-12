@@ -2,7 +2,7 @@
 
 import { Logo } from '@/components/logo'
 import { cn } from '@/utils/cn'
-import { ChartArea, LogOut, LucideIcon, PackageSearch, Settings } from 'lucide-react'
+import { ChartArea, Library, LogOut, LucideIcon, PackageSearch, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -27,7 +27,7 @@ function NavItem({ icon: Icon, children, href }: { icon: LucideIcon; children: s
 
 export function Sidebar() {
   return (
-    <aside className='h-screen border-r'>
+    <aside className='h-screen border-r sticky top-0'>
       <div className='flex flex-col'>
         <div className='h-20 border-b w-full flex items-center justify-center text-center'>
           <Logo />
@@ -39,6 +39,10 @@ export function Sidebar() {
 
           <NavItem href='/products' icon={PackageSearch}>
             Products
+          </NavItem>
+
+          <NavItem href='/library' icon={Library}>
+            Library
           </NavItem>
 
           <NavItem href='/settings' icon={Settings}>

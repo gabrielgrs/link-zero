@@ -1,21 +1,27 @@
 import { db } from '@/libs/mongoose'
+import { ProductSchema } from '@/libs/mongoose/schemas/product'
 import stripeClient from '@/libs/stripe'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-async function checkoutSessionComplete(session: Stripe.Checkout.Session) {
-  const user = await db.user.findOneAndUpdate(
-    { stripeCustomerId: session.client_reference_id },
-    { stripeSubscriptionId: session.subscription! },
+async function checkoutSessionUpdate(
+  session: Stripe.Checkout.Session,
+  status: ProductSchema['sales'][number]['status'],
+) {
+  const { client_reference_id: userId, metadata } = session
+  const productId = metadata?.productId
+  if (!productId) return NextResponse.json({ message: 'Product not found' }, { status: 404 })
+
+  const response = await db.product.findOneAndUpdate(
+    { _id: productId, 'sales.user': userId },
+    { $push: { 'sensors.0.measurements': { status } } },
+    { new: true },
   )
-  if (!user) throw new Error('Checkout not found')
-  return NextResponse.json({ received: true }, { status: 200 })
-}
 
-async function customerSubscriptionDeleted({ id: subscriptionId }: Stripe.Subscription) {
-  const user = await db.user.findOneAndUpdate({ stripeSubscriptionId: subscriptionId }, { subscriptionId: undefined })
-  if (!user) throw new Error('Subscription not found')
+  const updatedItem = response?.sales.find((sale) => sale.user.toString() === userId && sale.status === status)
+  if (!updatedItem) return NextResponse.json({ message: 'Sale not found' }, { status: 404 })
 
+  // if (!user) throw new Error('Checkout not found')
   return NextResponse.json({ received: true }, { status: 200 })
 }
 
@@ -28,11 +34,11 @@ export async function POST(req: Request) {
     const event = stripeClient.webhooks.constructEvent(requestText, signature, webhookSecret)
 
     if (event.type === 'checkout.session.completed') {
-      return checkoutSessionComplete(event.data.object)
+      return checkoutSessionUpdate(event.data.object, 'success')
     }
 
-    if (event.type === 'customer.subscription.deleted') {
-      return customerSubscriptionDeleted(event.data.object)
+    if (event.type === 'checkout.session.async_payment_failed') {
+      return checkoutSessionUpdate(event.data.object, 'failure')
     }
 
     return NextResponse.json({ received: true })

@@ -26,6 +26,12 @@ export const getUserProducts = authProcedure.handler(async ({ ctx }) => {
   return parseData(products)
 })
 
+export const getUserLibraryProducts = authProcedure.handler(async ({ ctx }) => {
+  const products = await db.product.find({ sales: { $in: [{ user: ctx.user._id }] } }).lean()
+
+  return parseData(products)
+})
+
 export const createProduct = authProcedure
   .input(
     z.object({

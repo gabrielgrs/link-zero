@@ -1,10 +1,11 @@
 'use client'
+
 import { DollarSign } from 'lucide-react'
 import { motion } from 'motion/react'
 
 const randomArray = Array.from({ length: 4 }, () => Math.floor(Math.random() * (200 - 100 + 1) + 100))
 
-export function Salles() {
+export function Sales() {
   return (
     <div className='flex flex-col gap-0 hover:gap-8 duration-500'>
       {randomArray.map((item, index) => {
