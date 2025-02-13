@@ -12,6 +12,32 @@ type SaleSchema = {
   updatedAt: Date
 }
 
+export const mimeTypes = {
+  pdf: 'application/pdf',
+  txt: 'text/plain',
+  csv: 'text/csv',
+  json: 'application/json',
+  doc: 'application/msword',
+  // docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  xls: 'application/vnd.ms-excel',
+  // xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ppt: 'application/vnd.ms-powerpoint',
+  // pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  svg: 'image/svg+xml',
+  mp3: 'audio/mpeg',
+  wav: 'audio/wav',
+  ogg: 'audio/ogg',
+  mp4: 'video/mp4',
+  webm: 'video/webm',
+  avi: 'video/x-msvideo',
+  zip: 'application/zip',
+} as const
+
 export type ProductSchema = {
   _id: string
   name: string
@@ -20,7 +46,10 @@ export type ProductSchema = {
   currency: Currency
   price: number
   description: string
-  url?: string
+  content: {
+    url: string
+    format: keyof typeof mimeTypes | 'custom'
+  }
   user: Types.ObjectId
   characteristics: { label: string; value: string }[]
   category: keyof typeof categories
@@ -81,9 +110,19 @@ export const product = createMongooseSchema<ProductSchema>(
         type: String,
         required: true,
       },
-      url: {
-        type: String,
-        required: false,
+      content: {
+        type: {
+          url: {
+            type: String,
+            required: false,
+          },
+          format: {
+            type: String,
+            required: true,
+            enum: [...Object.keys(mimeTypes), 'custom'],
+          },
+        },
+        required: true,
         select: false,
       },
       published: {

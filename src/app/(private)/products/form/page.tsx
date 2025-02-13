@@ -5,18 +5,21 @@ import { Fieldset } from '@/components/fieldset'
 import { Column, Grid } from '@/components/grid'
 import { Product } from '@/components/product'
 import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/hooks/use-auth'
+import { mimeTypes } from '@/libs/mongoose/schemas/product'
 import { categories } from '@/utils/categories'
 import { cn } from '@/utils/cn'
 import { Currency, currencies } from '@/utils/constants/currencies'
 import { requiredField } from '@/utils/messages'
-import { Trash } from 'lucide-react'
+import { ChevronDown, Trash } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form'
 import slugify from 'slugify'
 import { toast } from 'sonner'
@@ -24,19 +27,20 @@ import { useServerAction } from 'zsa-react'
 
 const defaultValues = {
   name: '',
-  cover: '',
+  cover: '' as string | undefined,
   description: '',
   price: 0,
   category: '',
-  currency: '' as Currency | '',
+  currency: Object.values(currencies)[0] as Currency,
   characteristics: [] as { label: string; value: string }[],
   slug: '',
   file: '',
 }
 
 export default function Page() {
+  const [isUrl, setIsUrl] = useState(false)
   const { push } = useRouter()
-  const { control, register, formState, handleSubmit, setValue } = useForm({ defaultValues })
+  const { control, register, formState, handleSubmit, resetField } = useForm({ defaultValues })
   const name = useWatch({ control, name: 'name' })
   const price = useWatch({ control, name: 'price' })
   const currency = useWatch({ control, name: 'currency' })
@@ -67,12 +71,37 @@ export default function Page() {
             <h1>Publish a new product</h1>
           </Column>
 
-          <Column size={12}>
-            <Fieldset
-              label='Content'
-              error={formState.errors.file?.message}
-              info='This will be the content to sell (max 5mb)'
-            >
+          <Column size={12} className='px-8'>
+            {isUrl ? (
+              <p className={cn('text-xs text-destructive')}>We cant protect custom links, prefer to use custom files</p>
+            ) : (
+              <p className={cn('text-xs text-muted-foreground')}>
+                Aceppted formats:{' '}
+                {Object.values(mimeTypes)
+                  .map((item) => item.split('/')[1])
+                  .join(', ')}
+              </p>
+            )}
+          </Column>
+
+          <Column size={2}>
+            <Fieldset label='Field type'>
+              <div className='flex items-center gap-1 h-10'>
+                <Label>URL</Label>
+                <Switch
+                  checked={!isUrl}
+                  onCheckedChange={(value) => {
+                    resetField('file')
+                    setIsUrl(!value)
+                  }}
+                />
+                <Label>File</Label>
+              </div>
+            </Fieldset>
+          </Column>
+
+          <Column size={10}>
+            <Fieldset label='Content' error={formState.errors.file?.message} info='Max of 5mb'>
               <Controller
                 control={control}
                 name='file'
@@ -80,8 +109,10 @@ export default function Page() {
                   return (
                     <Input
                       {...register('file', { required: requiredField })}
-                      type='file'
+                      type={isUrl ? 'url' : 'file'}
                       value={field.value}
+                      placeholder={isUrl ? 'Product URL' : 'Product file'}
+                      accept={Object.values(mimeTypes).join(', ')}
                       onChange={(event) => {
                         const file = event.target.files?.[0]
                         if (file && file.size > 5 * 1024 * 1024) {
@@ -97,13 +128,40 @@ export default function Page() {
             </Fieldset>
           </Column>
 
-          <Column size={6}>
-            <Fieldset label='Cover URL' error={formState.errors.cover?.message}>
-              <Input {...register('cover', { required: requiredField })} placeholder='Product Cover' />
+          <Column size={4}>
+            <Fieldset label='Category' error={formState.errors.category?.message}>
+              <Controller
+                control={control}
+                name='category'
+                render={({ field }) => {
+                  return (
+                    <Select onValueChange={(e) => field.onChange(e)}>
+                      <SelectTrigger className='w-full'>
+                        <SelectValue placeholder='Select' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(categories).map(([key, value]) => {
+                          return (
+                            <SelectItem key={key} value={key}>
+                              {value}
+                            </SelectItem>
+                          )
+                        })}
+                      </SelectContent>
+                    </Select>
+                  )
+                }}
+              />
             </Fieldset>
           </Column>
 
-          <Column size={6}>
+          <Column size={8}>
+            <Fieldset label='Cover URL' error={formState.errors.cover?.message}>
+              <Input {...register('cover')} placeholder='Product Cover' />
+            </Fieldset>
+          </Column>
+
+          <Column size={4}>
             <Fieldset
               label='Slug'
               error={formState.errors.name?.message}
@@ -134,62 +192,47 @@ export default function Page() {
             </Fieldset>
           </Column>
 
-          <Column size={6}>
+          <Column size={5}>
             <Fieldset label='Name' error={formState.errors.name?.message}>
               <Input {...register('name', { required: requiredField })} placeholder='Type the product name' />
             </Fieldset>
           </Column>
 
           <Column size={3}>
-            <Fieldset label='Price currency' error={formState.errors.category?.message}>
-              <Controller
-                control={control}
-                name='currency'
-                render={({ field }) => {
-                  return (
-                    <Select onValueChange={(e) => field.onChange(e)}>
-                      <SelectTrigger className='w-full'>
-                        <SelectValue placeholder='Select' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {currencies.map((c) => {
-                          return (
-                            <SelectItem key={c} value={c}>
-                              {c}
-                            </SelectItem>
-                          )
-                        })}
-                      </SelectContent>
-                    </Select>
-                  )
-                }}
-              />
-            </Fieldset>
-          </Column>
-
-          <Column size={3}>
             <Fieldset label='Product price' error={formState.errors.price?.message}>
-              <Input {...register('price', { required: requiredField })} placeholder='Type the product price' />
+              <div className='relative'>
+                <Controller
+                  control={control}
+                  name='currency'
+                  render={({ field }) => {
+                    return (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className='absolute text-xs left-1 bg-foreground/10 h-8 w-12 flex gap-1 items-center justify-center top-[50%] translate-y-[-50%]'>
+                            {currency.toUpperCase()}
+                            <ChevronDown size={12} />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          {Object.entries(currencies).map(([key, value]) => {
+                            return (
+                              <DropdownMenuItem key={key} onClick={() => field.onChange(value)}>
+                                {value.toUpperCase()}
+                              </DropdownMenuItem>
+                            )
+                          })}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )
+                  }}
+                />
+                <Input
+                  {...register('price', { required: requiredField })}
+                  placeholder='Type the product price'
+                  className='pl-16'
+                />
+              </div>
             </Fieldset>
-          </Column>
-
-          <Column size={12}>
-            <Label>Category</Label>
-            <div className='flex flex-wrap items-center gap-1'>
-              {Object.entries(categories).map(([key, value]) => (
-                <button
-                  key={key}
-                  type='button'
-                  className={cn(
-                    'text-sm text-muted-foreground border-primary/20 border-[1px] py-1 px-2 rounded-full duration-500',
-                    category === key && 'border-primary bg-foreground text-background',
-                  )}
-                  onClick={() => setValue('category', key)}
-                >
-                  {value}
-                </button>
-              ))}
-            </div>
           </Column>
 
           <Column size={12}>

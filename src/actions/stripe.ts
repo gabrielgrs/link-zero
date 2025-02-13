@@ -2,19 +2,12 @@
 
 import { db } from '@/libs/mongoose'
 import stripeClient from '@/libs/stripe'
+import { getDomain } from '@/utils/action/server'
 import { currencies } from '@/utils/constants/currencies'
-import { headers } from 'next/headers'
 import { z } from 'zod'
 import { createServerAction } from 'zsa'
 import { createOrFindUser } from './auth'
 import { authProcedure } from './procedures'
-
-export async function getDomain() {
-  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
-  const headersData = await headers()
-  const host = headersData.get('host')
-  return `${protocol}://${host}`
-}
 
 export const createProductAndPrice = authProcedure
   .input(
@@ -22,7 +15,7 @@ export const createProductAndPrice = authProcedure
       currency: z.enum(currencies),
       name: z.string(),
       description: z.string(),
-      cover: z.string(),
+      cover: z.string().optional(),
       price: z.number(),
     }),
   )
@@ -30,7 +23,7 @@ export const createProductAndPrice = authProcedure
     const createdProduct = await stripeClient.products.create({
       name: input.name,
       description: input.description,
-      images: [input.cover],
+      images: input.cover ? [input.cover] : [],
     })
 
     const createdPrice = await stripeClient.prices.create({

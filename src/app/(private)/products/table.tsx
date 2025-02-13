@@ -12,6 +12,7 @@ import { EllipsisVertical } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { useServerAction } from 'zsa-react'
+import { DownloadButton } from '../library/download-button'
 import { PreviewLink } from './preview-link'
 
 type Props = {
@@ -82,6 +83,7 @@ export function ProductsTable({ products: initialProducts }: Props) {
                       </button>
                     </TableCell>
                     <TableCell className='text-right'>
+                      <DownloadButton productId={item._id} />
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant='outline'>
