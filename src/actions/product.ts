@@ -3,9 +3,10 @@
 import { db } from '@/libs/mongoose'
 import { ProductSchema } from '@/libs/mongoose/schemas/product'
 import { UserSchema } from '@/libs/mongoose/schemas/user'
-import { duplicateFile, uploadFile } from '@/libs/vercel/blob'
+import { duplicateFile, removeFile, uploadFile } from '@/libs/vercel/blob'
 import { parseData } from '@/utils/action'
 import { currencies } from '@/utils/constants/currencies'
+import { waitUntil } from '@vercel/functions'
 import { z } from 'zod'
 import { createServerAction } from 'zsa'
 import { authProcedure } from './procedures'
@@ -83,6 +84,11 @@ export const getRandomProducts = createServerAction().handler(async () => {
   return parseData(products)
 })
 
+async function deleteAfterSomeTime(callback: () => void, durationInMs: number) {
+  await new Promise((resolve) => setTimeout(resolve, durationInMs))
+  return callback()
+}
+
 export const generateDownloadUrl = createServerAction()
   .input(z.object({ productId: z.string() }))
   .handler(async ({ input }) => {
@@ -91,6 +97,7 @@ export const generateDownloadUrl = createServerAction()
 
     const randomHash = Math.random().toString(36).substring(2)
 
-    const duplicated = await duplicateFile(product.url, `/temp/${product.name}-${randomHash}`)
-    return duplicated.url
+    const duplicated = await duplicateFile(product.url, `temp/${product.name}-${randomHash}`)
+    waitUntil(deleteAfterSomeTime(() => removeFile(duplicated.url), 5000))
+    return { url: duplicated.url }
   })

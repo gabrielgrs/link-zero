@@ -5,6 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import dayjs from 'dayjs'
 import { EllipsisVertical } from 'lucide-react'
+import { DownloadButton } from './download-button'
 import { PreviewLink } from './preview-link'
 
 export default async function Page() {
@@ -50,7 +51,8 @@ export default async function Page() {
                     </TableCell>
                     <TableCell>{dayjs(item.createdAt).format('DD MMM, YYYY')}</TableCell>
 
-                    <TableCell className='text-right'>
+                    <TableCell className='text-right flex items-center gap-2'>
+                      <DownloadButton productId={item._id} />
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant='outline'>
