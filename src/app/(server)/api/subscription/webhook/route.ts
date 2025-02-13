@@ -12,13 +12,13 @@ async function checkoutSessionUpdate(
   const productId = metadata?.productId
   if (!productId) return NextResponse.json({ message: 'Product not found' }, { status: 404 })
 
-  const response = await db.product.findOneAndUpdate(
+  const product = await db.product.findOneAndUpdate(
     { _id: productId, 'sales.user': userId },
-    { $set: { 'sales.$.status': status } },
+    { $set: { 'sales.$': { status } } },
     { new: true },
   )
 
-  const updatedItem = response?.sales.find((sale) => sale.user.toString() === userId && sale.status === status)
+  const updatedItem = product?.sales.find((sale) => sale.user.toString() === userId && sale.status === status)
   if (!updatedItem) return NextResponse.json({ message: 'Sale not found' }, { status: 404 })
 
   // if (!user) throw new Error('Checkout not found')
