@@ -57,7 +57,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         <div className={cn('relative z-10')}>
           <div className={cn('flex items-center gap-1', loading ? 'opacity-0' : 'opacity-100')}>{children}</div>
           {loading && (
-            <div className='absolute left-0 top-0 bg-inherit'>
+            <div className='absolute left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] bg-inherit'>
               <Loader2 size={20} className='animate-spin' />
             </div>
           )}

@@ -5,6 +5,6 @@ import { AuthClient } from './client'
 export default async function Page() {
   const [authUser] = await getAuthenticatedUser()
 
-  if (Boolean(authUser)) return redirect('/home')
+  if (Boolean(authUser)) return redirect('/dashboard')
   return <AuthClient />
 }

@@ -19,7 +19,8 @@ export type ProductSchema = {
   cover?: string
   currency: Currency
   price: number
-  content: string
+  description: string
+  url?: string
   user: Types.ObjectId
   characteristics: { label: string; value: string }[]
   category: keyof typeof categories
@@ -40,7 +41,7 @@ const saleSchema = new Schema<SaleSchema>({
     type: String,
     required: true,
     enum: ['pending', 'success', 'failure'],
-    default: 'pending'
+    default: 'pending',
   },
   price: {
     type: Number,
@@ -75,9 +76,14 @@ export const product = createMongooseSchema<ProductSchema>(
         type: Number,
         required: true,
       },
-      content: {
+      description: {
         type: String,
         required: true,
+      },
+      url: {
+        type: String,
+        required: false,
+        select: false,
       },
       user: {
         type: Schema.Types.ObjectId,

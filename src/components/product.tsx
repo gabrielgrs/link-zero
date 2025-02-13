@@ -26,7 +26,7 @@ export function Product({
   cover,
   price,
   user,
-  content,
+  description,
   characteristics,
   category,
   currency,
@@ -66,7 +66,7 @@ export function Product({
               <Link href={`/user/${user.username}`}>{user.name}</Link>
             </div>
           </div>
-          {content && <p className='p-4'>{content}</p>}
+          {description && <p className='p-4'>{description}</p>}
         </div>
         <div className='border-l space-y-4'>
           <div>

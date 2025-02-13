@@ -25,12 +25,13 @@ import { useServerAction } from 'zsa-react'
 const defaultValues = {
   name: '',
   cover: '',
-  content: '',
+  description: '',
   price: 0,
   category: '',
   currency: '' as Currency | '',
   characteristics: [] as { label: string; value: string }[],
   slug: '',
+  file: '',
 }
 
 export default function Page() {
@@ -41,7 +42,7 @@ export default function Page() {
   const currency = useWatch({ control, name: 'currency' })
   const cover = useWatch({ control, name: 'cover' })
   const category = useWatch({ control, name: 'category' })
-  const content = useWatch({ control, name: 'content' })
+  const description = useWatch({ control, name: 'description' })
   const slug = useWatch({ control, name: 'slug' })
   const characteristics = useWatch({ control, name: 'characteristics' })
   const characteristicsFieldArray = useFieldArray({ control, name: 'characteristics' })
@@ -64,6 +65,36 @@ export default function Page() {
         <Grid>
           <Column size={12}>
             <h1>Publish a new product</h1>
+          </Column>
+
+          <Column size={12}>
+            <Fieldset
+              label='Content'
+              error={formState.errors.file?.message}
+              info='This will be the content to sell (max 5mb)'
+            >
+              <Controller
+                control={control}
+                name='file'
+                render={({ field }) => {
+                  return (
+                    <Input
+                      {...register('file', { required: requiredField })}
+                      type='file'
+                      value={field.value}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0]
+                        if (file && file.size > 5 * 1024 * 1024) {
+                          return toast.error('File size must be less than 5mb.')
+                        }
+
+                        field.onChange(event)
+                      }}
+                    />
+                  )
+                }}
+              />
+            </Fieldset>
           </Column>
 
           <Column size={6}>
@@ -103,7 +134,7 @@ export default function Page() {
             </Fieldset>
           </Column>
 
-          <Column size={7}>
+          <Column size={6}>
             <Fieldset label='Name' error={formState.errors.name?.message}>
               <Input {...register('name', { required: requiredField })} placeholder='Type the product name' />
             </Fieldset>
@@ -162,8 +193,8 @@ export default function Page() {
           </Column>
 
           <Column size={12}>
-            <Fieldset label='Description' error={formState.errors.content?.message}>
-              <Textarea {...register('content', { required: requiredField })} placeholder='Describe the product' />
+            <Fieldset label='Description' error={formState.errors.description?.message}>
+              <Textarea {...register('description', { required: requiredField })} placeholder='Describe the product' />
             </Fieldset>
           </Column>
 
@@ -217,7 +248,7 @@ export default function Page() {
               price={price}
               cover={cover}
               user={user}
-              content={content}
+              description={description}
               characteristics={characteristics}
               category={category as keyof typeof categories}
               slug={slug}

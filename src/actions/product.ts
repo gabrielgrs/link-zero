@@ -3,6 +3,7 @@
 import { db } from '@/libs/mongoose'
 import { ProductSchema } from '@/libs/mongoose/schemas/product'
 import { UserSchema } from '@/libs/mongoose/schemas/user'
+import { duplicateFile, uploadFile } from '@/libs/vercel/blob'
 import { parseData } from '@/utils/action'
 import { currencies } from '@/utils/constants/currencies'
 import { z } from 'zod'
@@ -38,22 +39,32 @@ export const createProduct = authProcedure
       slug: z.string().nonempty(),
       category: z.string().nonempty(),
       characteristics: z.array(z.object({ label: z.string(), value: z.string() })),
-      content: z.string().nonempty(),
+      description: z.string().nonempty(),
+      file: z.array(z.instanceof(File)),
       name: z.string().nonempty(),
       currency: z.enum(currencies),
       price: z.string().nonempty(),
       cover: z.string().nullable(),
-    } as Record<keyof ProductSchema, any>),
+    } as Record<keyof ProductSchema | 'file', any>),
   )
   .handler(async ({ ctx, input }) => {
     const cover = input.cover || ''
-    const product = await db.product.create({ ...input, cover, price: Number(input.price), user: ctx.user._id })
+
+    const file = await uploadFile(input.file[0])
+
+    const product = await db.product.create({
+      ...input,
+      url: file.url,
+      cover,
+      price: Number(input.price),
+      user: ctx.user._id,
+    })
 
     const [res, err] = await createProductAndPrice({
       cover,
       currency: product.currency,
       name: product.slug,
-      description: product.content,
+      description: product.description,
       price: product.price,
     })
     if (err) {
@@ -71,3 +82,15 @@ export const getRandomProducts = createServerAction().handler(async () => {
 
   return parseData(products)
 })
+
+export const generateDownloadUrl = createServerAction()
+  .input(z.object({ productId: z.string() }))
+  .handler(async ({ input }) => {
+    const product = await db.product.findOne({ _id: input.productId }).select('+url').lean()
+    if (!product?.url) throw new Error('Product not found')
+
+    const randomHash = Math.random().toString(36).substring(2)
+
+    const duplicated = await duplicateFile(product.url, `/temp/${product.name}-${randomHash}`)
+    return duplicated.url
+  })

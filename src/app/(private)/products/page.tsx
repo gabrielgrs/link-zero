@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { EllipsisVertical } from 'lucide-react'
+// import { DownloadButton } from './download-button'
 import { PreviewLink } from './preview-link'
 
 export default async function Page() {
@@ -52,6 +53,7 @@ export default async function Page() {
                       )}
                     </TableCell>
                     <TableCell className='text-right'>
+                      {/* <DownloadButton productId={item._id} /> */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant='outline'>

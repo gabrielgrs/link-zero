@@ -1,5 +1,5 @@
 import { APP_NAME } from '@/utils/constants/brand'
-import { del, put } from '@vercel/blob'
+import { copy, del, put } from '@vercel/blob'
 
 const BUCKET = APP_NAME.replace(' ', '-').toLowerCase()
 
@@ -10,3 +10,6 @@ export const removeFile = (fileName: string) =>
   del(fileName, {
     token: process.env.BLOB_READ_WRITE_TOKEN,
   })
+
+export const duplicateFile = (fileName: string, fileCopyName: string) =>
+  copy(fileName, `${BUCKET}/${fileCopyName}`, { token: process.env.BLOB_READ_WRITE_TOKEN, access: 'public' })
