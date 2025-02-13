@@ -83,7 +83,6 @@ export function ProductsTable({ products: initialProducts }: Props) {
                       </button>
                     </TableCell>
                     <TableCell className='text-right'>
-                      <DownloadButton productId={item._id} />
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant='outline'>
