@@ -24,6 +24,7 @@ export type ProductSchema = {
   user: Types.ObjectId
   characteristics: { label: string; value: string }[]
   category: keyof typeof categories
+  published: boolean
   stripeProductId?: string
   stripePriceId?: string
   sales: SaleSchema[]
@@ -84,6 +85,10 @@ export const product = createMongooseSchema<ProductSchema>(
         type: String,
         required: false,
         select: false,
+      },
+      published: {
+        type: Boolean,
+        default: false,
       },
       user: {
         type: Schema.Types.ObjectId,

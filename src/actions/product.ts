@@ -79,7 +79,11 @@ export const createProduct = authProcedure
   })
 
 export const getRandomProducts = createServerAction().handler(async () => {
-  const products = await db.product.find().populate<{ user: UserSchema }>('user').limit(9).lean()
+  const products = await db.product
+    .find({ url: { $ne: null }, published: true })
+    .populate<{ user: UserSchema }>('user')
+    .limit(9)
+    .lean()
 
   return parseData(products)
 })
@@ -100,4 +104,16 @@ export const generateDownloadUrl = createServerAction()
     const duplicated = await duplicateFile(product.url, `temp/${product.name}-${randomHash}`)
     waitUntil(deleteAfterSomeTime(() => removeFile(duplicated.url), 5000))
     return { url: duplicated.url }
+  })
+
+export const publishOrUnpublishProduct = authProcedure
+  .input(z.object({ productId: z.string(), published: z.boolean() }))
+  .handler(async ({ input, ctx }) => {
+    const product = await db.product.findOneAndUpdate(
+      { _id: input.productId, user: ctx.user._id },
+      { published: input.published },
+    )
+    if (!product) throw new Error('Not found')
+
+    return parseData(input)
   })
