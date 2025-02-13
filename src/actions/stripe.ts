@@ -41,6 +41,7 @@ export const createProductAndPrice = authProcedure
 
 export const createCheckout = createServerAction()
   .input(z.object({ productId: z.string(), email: z.string().nonempty() }))
+  .onError(console.log)
   .handler(async ({ input }) => {
     const domain = await getDomain()
 
@@ -53,7 +54,7 @@ export const createCheckout = createServerAction()
 
     const { url } = await stripeClient.checkout.sessions.create({
       payment_method_types: ['card'],
-      client_reference_id: user._id,
+      client_reference_id: user._id.toString(),
       success_url: `${domain}/subscription?type=success`,
       cancel_url: `${domain}/subscription?type=failure`,
       mode: 'payment',
@@ -61,7 +62,7 @@ export const createCheckout = createServerAction()
       line_items: [{ price: product.stripePriceId, quantity: 1 }],
       customer: user.stripeCustomerId,
       metadata: {
-        productId: product._id,
+        productId: product._id.toString(),
       },
     })
 

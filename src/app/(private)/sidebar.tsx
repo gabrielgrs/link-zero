@@ -29,9 +29,9 @@ export function Sidebar() {
   return (
     <aside className='h-screen border-r sticky top-0'>
       <div className='flex flex-col'>
-        <div className='h-20 border-b w-full flex items-center justify-center text-center'>
+        <Link href='/' className='h-20 border-b w-full flex items-center justify-center text-center'>
           <Logo />
-        </div>
+        </Link>
         <nav>
           <NavItem href='/dashboard' icon={ChartArea}>
             Dashboard
