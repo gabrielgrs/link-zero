@@ -63,7 +63,6 @@ export const createProduct = authProcedure
       cover: z.string().nullable(),
     } as Record<keyof ProductSchema | 'file', any>),
   )
-  .onError(console.error)
   .handler(async ({ ctx, input }) => {
     const content = await getContent(input.file[0] instanceof File ? input.file[0] : String(input))
 
@@ -126,4 +125,12 @@ export const publishOrUnpublishProduct = authProcedure
     if (!product) throw new Error('Not found')
 
     return parseData(input)
+  })
+
+export const getProductsByUser = createServerAction()
+  .input(z.object({ userId: z.string() }))
+  .handler(async ({ input }) => {
+    const products = await db.product.find({ user: input.userId, published: true }).lean()
+
+    return parseData(products)
   })

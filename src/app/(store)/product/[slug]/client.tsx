@@ -39,7 +39,7 @@ export function ProductClient({ product }: Props) {
           onSubmit={() => action.execute({ email: 'grxgabriel@gmail.com', productId: product._id })}
         />
       </main>
-      <footer className='flex justify-center items-center gap-2 text-muted-foreground'>
+      <footer className='flex justify-center items-center gap-2 text-muted-foreground py-4'>
         Powered by{' '}
         <Link href='/'>
           <Logo />

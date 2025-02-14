@@ -4,6 +4,7 @@ import { createMongooseSchema } from '../helpers'
 export type UserSchema = {
   _id: string
   name?: string
+  bio?: string
   username: string
   email: string
   role: 'USER' | 'ADMIN'
@@ -33,6 +34,12 @@ export const user = createMongooseSchema<UserSchema>(
         required: false,
         minlength: 3,
         maxlength: 32,
+      },
+      bio: {
+        type: String,
+        required: false,
+        minlength: 3,
+        maxlength: 500,
       },
       stripeCustomerId: {
         type: String,
