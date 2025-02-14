@@ -22,15 +22,25 @@ export function HomeClient({ products }: Props) {
 
   return (
     <>
-      <header className='flex justify-between px-4 border-b bg-background/70 backdrop-blur-lg z-50 h-16 items-center sticky top-0'>
+      <header className='flex justify-between px-4 border-b bg-background/90 backdrop-blur-lg z-50 h-16 items-center sticky top-0'>
         <Logo />
-        <nav className='flex items-center gap-4 text-muted-foreground text-sm'>
-          <Link href='/#pricing'>Pricing</Link>
-          <Link href='/#faq'>FAQ</Link>
-          <button type='button' onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-            Theme
+        <nav className='flex items-center text-muted-foreground text-sm h-full'>
+          <Link
+            href='/#pricing'
+            className='h-full flex items-center border-r border-l px-8 hover:text-primary duration-500'
+          >
+            Pricing
+          </Link>
+          <Link href='/#faq' className='h-full flex items-center border-r px-8 hover:text-primary duration-500'>
+            faq
+          </Link>
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className='h-full flex items-center border-r px-8 hover:text-primary duration-500'
+          >
+            {theme === 'dark' ? 'Light' : 'Dark'} theme
           </button>
-          <Button>
+          <Button className='ml-4'>
             <Link href='/dashboard' className='flex items-center gap-2 group'>
               Dashboard <ArrowRight size={16} className='duration-500 group-hover:translate-x-2' />
             </Link>

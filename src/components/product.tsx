@@ -12,7 +12,7 @@ import { Label } from './ui/label'
 
 type Props = Omit<
   ProductSchema,
-  '_id' | 'user' | 'sales' | 'published' | 'content' | 'stripePriceId' | 'stripeProductId' | 'createdAt' | 'updatedAt'
+  '_id' | 'user' | 'sales' | 'active' | 'content' | 'stripePriceId' | 'stripeProductId' | 'createdAt' | 'updatedAt'
 > & {
   user: UserSchema
   viewAsCard?: boolean

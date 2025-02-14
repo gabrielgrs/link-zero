@@ -14,7 +14,7 @@ export const createProductAndPrice = authProcedure
     z.object({
       currency: z.enum(currencies),
       name: z.string(),
-      description: z.string(),
+      description: z.string().optional(),
       cover: z.string().optional(),
       price: z.number(),
     }),
@@ -36,6 +36,52 @@ export const createProductAndPrice = authProcedure
     return {
       productId: createdProduct.id,
       priceId: createdPrice.id,
+    }
+  })
+
+export const updateProductAndPrice = authProcedure
+  .input(
+    z.object({
+      name: z.string().nonempty(),
+      description: z.string().optional(),
+      cover: z.string().optional(),
+      stripeProductId: z.string().nonempty(),
+      stripePriceId: z.string().nonempty(),
+    }),
+  )
+  .handler(async ({ input }) => {
+    await stripeClient.products.update(input.stripeProductId, {
+      name: input.name,
+      description: input.description,
+      images: input.cover ? [input.cover] : [],
+    })
+
+    await stripeClient.prices.update(input.stripePriceId, {
+      nickname: input.name,
+    })
+  })
+
+export const activeOrInactiveProductAndPrice = authProcedure
+  .input(
+    z.object({
+      stripeProductId: z.string().nonempty(),
+      stripePriceId: z.string().nonempty(),
+      active: z.boolean(),
+    }),
+  )
+  .handler(async ({ input }) => {
+    try {
+      await stripeClient.products.update(input.stripeProductId, {
+        active: input.active,
+      })
+
+      await stripeClient.prices.update(input.stripePriceId, {
+        active: input.active,
+      })
+
+      return true
+    } catch {
+      return false
     }
   })
 

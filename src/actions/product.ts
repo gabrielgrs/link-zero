@@ -10,12 +10,26 @@ import { currencies } from '@/utils/constants/currencies'
 import { z } from 'zod'
 import { createServerAction } from 'zsa'
 import { authProcedure } from './procedures'
-import { createProductAndPrice } from './stripe'
+import { activeOrInactiveProductAndPrice, createProductAndPrice, updateProductAndPrice } from './stripe'
 
 export const getProductBySlug = createServerAction()
   .input(z.object({ slug: z.string() }))
   .handler(async ({ input }) => {
     const product = await db.product.findOne({ slug: input.slug }).populate<{ user: UserSchema }>('user').lean()
+
+    if (!product) throw new Error('Not found')
+
+    return parseData(product)
+  })
+
+export const getProductBySlugWithContent = createServerAction()
+  .input(z.object({ slug: z.string() }))
+  .handler(async ({ input }) => {
+    const product = await db.product
+      .findOne({ slug: input.slug })
+      .select('+content')
+      .populate<{ user: UserSchema }>('user')
+      .lean()
 
     if (!product) throw new Error('Not found')
 
@@ -76,7 +90,7 @@ export const createProduct = authProcedure
     const [res, err] = await createProductAndPrice({
       cover: product.cover,
       currency: product.currency,
-      name: product.slug,
+      name: product.name,
       description: product.description,
       price: product.price,
     })
@@ -90,9 +104,39 @@ export const createProduct = authProcedure
     return parseData(product)
   })
 
+export const updateProduct = authProcedure
+  .input(
+    z.object({
+      _id: z.string().nonempty(),
+      slug: z.string().nonempty(),
+      category: z.string().nonempty(),
+      characteristics: z.array(z.object({ label: z.string(), value: z.string() })),
+      description: z.string().nonempty(),
+      name: z.string().nonempty(),
+      cover: z.string().nullable(),
+    } as Record<keyof ProductSchema | 'file', any>),
+  )
+  .handler(async ({ ctx, input }) => {
+    const { _id, ...rest } = input
+
+    const product = await db.product.findOneAndUpdate({ _id, user: ctx.user._id }, { ...rest }).lean()
+    if (!product) throw new Error('Not found')
+
+    const [, err] = await updateProductAndPrice({
+      stripeProductId: product.stripeProductId!,
+      stripePriceId: product.stripePriceId!,
+      cover: input.cover,
+      name: input.name,
+      description: input.description,
+    })
+    if (err) throw err
+
+    return parseData(input)
+  })
+
 export const getRandomProducts = createServerAction().handler(async () => {
   const products = await db.product
-    .find({ url: { $ne: null }, published: true })
+    .find({ url: { $ne: null }, active: true })
     .populate<{ user: UserSchema }>('user')
     .limit(9)
     .lean()
@@ -115,12 +159,19 @@ export const generateDownloadUrl = createServerAction()
     return { url: `${domain}/proxy-link?identifier=${link._id}` }
   })
 
-export const publishOrUnpublishProduct = authProcedure
-  .input(z.object({ productId: z.string(), published: z.boolean() }))
+export const activeOrInactiveProduct = authProcedure
+  .input(z.object({ productId: z.string(), active: z.boolean() }))
   .handler(async ({ input, ctx }) => {
+    const success = await activeOrInactiveProductAndPrice({
+      stripeProductId: input.productId,
+      stripePriceId: input.productId,
+      active: input.active,
+    })
+    if (!success) throw new Error('Failed to process your request')
+
     const product = await db.product.findOneAndUpdate(
       { _id: input.productId, user: ctx.user._id },
-      { published: input.published },
+      { active: input.active },
     )
     if (!product) throw new Error('Not found')
 
@@ -130,7 +181,7 @@ export const publishOrUnpublishProduct = authProcedure
 export const getProductsByUser = createServerAction()
   .input(z.object({ userId: z.string() }))
   .handler(async ({ input }) => {
-    const products = await db.product.find({ user: input.userId, published: true }).lean()
+    const products = await db.product.find({ user: input.userId, active: true }).lean()
 
     return parseData(products)
   })

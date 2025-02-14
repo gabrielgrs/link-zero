@@ -1,6 +1,6 @@
 'use client'
 
-import { getUserProducts, publishOrUnpublishProduct } from '@/actions/product'
+import { activeOrInactiveProduct, getUserProducts } from '@/actions/product'
 import { Column, Grid } from '@/components/grid'
 import { Link } from '@/components/link'
 import { Badge } from '@/components/ui/badge'
@@ -21,9 +21,9 @@ type Props = {
 export function ProductsTable({ products: initialProducts }: Props) {
   const [products, setProducts] = useState(initialProducts)
 
-  const publishOrUnpublishProductAction = useServerAction(publishOrUnpublishProduct, {
+  const publishOrUnpublishProductAction = useServerAction(activeOrInactiveProduct, {
     onSuccess: ({ data }) => {
-      setProducts((p) => p.map((item) => (item._id === data.productId ? { ...item, published: data.published } : item)))
+      setProducts((p) => p.map((item) => (item._id === data.productId ? { ...item, active: data.active } : item)))
       toast.success('Product updated')
     },
     onError: () => {
@@ -74,10 +74,10 @@ export function ProductsTable({ products: initialProducts }: Props) {
                     </TableCell>
                     <TableCell>
                       <button>
-                        {item.published ? (
-                          <Badge variant='default'>Published</Badge>
+                        {item.active ? (
+                          <Badge variant='default'>Active</Badge>
                         ) : (
-                          <Badge variant='destructive'>Unpublished</Badge>
+                          <Badge variant='destructive'>Inactive</Badge>
                         )}
                       </button>
                     </TableCell>
@@ -95,12 +95,17 @@ export function ProductsTable({ products: initialProducts }: Props) {
                               onClick={() =>
                                 publishOrUnpublishProductAction.execute({
                                   productId: item._id,
-                                  published: !item.published,
+                                  active: !item.active,
                                 })
                               }
                             >
-                              {item.published ? 'Unpublish' : 'Publish'}
+                              {item.active ? 'Inactive' : 'Active'}
                             </button>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link className={`w-full`} href={`/products/form/${item.slug}`}>
+                              Edit
+                            </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem>Preview</DropdownMenuItem>
                           <DropdownMenuItem>Remove</DropdownMenuItem>

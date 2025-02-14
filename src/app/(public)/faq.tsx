@@ -27,12 +27,15 @@ export function FAQ() {
               className='text-left w-full'
               onClick={() => setOpenSections((p) => (p.includes(index) ? p.filter((i) => i !== index) : [...p, index]))}
             >
-              <p className='text-2xl md:text-3xl flex justify-between items-center'>
-                {item.question}
+              <div className='text-2xl md:text-3xl flex justify-between items-center'>
+                <div className='flex items-center gap-4'>
+                  <span className='text-sm text-muted-foreground'>{index + 1}</span>
+                  <p>{item.question}</p>
+                </div>
                 <span className={cn('duration-500', isOpen ? 'rotate-180' : 'rotate-0')}>
                   {isOpen ? <Minus /> : <Plus />}
                 </span>
-              </p>
+              </div>
             </button>
 
             <div
