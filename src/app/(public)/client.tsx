@@ -24,7 +24,9 @@ export function HomeClient({ products }: Props) {
   return (
     <>
       <header className='flex justify-between px-4 border-b bg-background/90 backdrop-blur-lg z-50 h-16 items-center sticky top-0'>
-        <Logo />
+        <Link href='/'>
+          <Logo />
+        </Link>
         <nav className='flex items-center text-muted-foreground text-sm h-full'>
           <Link
             href='/#pricing'

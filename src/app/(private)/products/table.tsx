@@ -26,8 +26,8 @@ export function ProductsTable({ products: initialProducts }: Props) {
       setProducts((p) => p.map((item) => (item._id === data.productId ? { ...item, active: data.active } : item)))
       toast.success('Product updated')
     },
-    onError: () => {
-      toast.error('Failed. Try again later.')
+    onError: (error) => {
+      toast.error(error.err.message || 'Failed. Try again later.')
     },
   })
 

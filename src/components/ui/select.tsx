@@ -24,12 +24,13 @@ const SelectTrigger = React.forwardRef<
     )}
     {...props}
   >
-    {children}
+    {props.value ?? children}
     <SelectPrimitive.Icon asChild>
       <ChevronDown className='h-4 w-4 opacity-50' />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ))
+
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
 
 const SelectScrollUpButton = React.forwardRef<

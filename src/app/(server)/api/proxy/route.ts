@@ -26,8 +26,8 @@ export async function GET(req: NextRequest) {
     return new NextResponse('Failed to get file', { status: response.status })
   }
 
-  const pdfBuffer = await response.arrayBuffer()
-  return new NextResponse(pdfBuffer, {
+  const contentBuffer = await response.arrayBuffer()
+  return new NextResponse(contentBuffer, {
     status: 200,
     headers: {
       'Content-Type': mimeTypes[format],

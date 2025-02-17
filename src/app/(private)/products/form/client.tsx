@@ -62,8 +62,8 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
       toast.success('Success!')
       push('/products')
     },
-    onError: () => {
-      toast.error('Failed. Try again later.')
+    onError: (error) => {
+      toast.error(error.err.message || 'Failed. Try again later.')
     },
   })
 
@@ -132,7 +132,7 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
                 name='category'
                 render={({ field }) => {
                   return (
-                    <Select onValueChange={(e) => field.onChange(e)}>
+                    <Select onValueChange={(e) => field.onChange(e)} value={field.value}>
                       <SelectTrigger className='w-full'>
                         <SelectValue placeholder='Select' />
                       </SelectTrigger>

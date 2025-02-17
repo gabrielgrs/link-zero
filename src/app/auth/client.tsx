@@ -30,8 +30,8 @@ export function AuthClient({ redirectTo }: Props) {
   const [needRegister, setNeedRegister] = useState(false)
 
   const action = useServerAction(authenticate, {
-    onError: () => {
-      toast.error('Failed to sign in')
+    onError: (error) => {
+      toast.error(error.err.message || 'Failed. Try again later.')
     },
     onSuccess: ({ data }) => {
       if (data.status === 'SHOULD_REGISTER') {

@@ -86,12 +86,12 @@ export const product = createMongooseSchema<ProductSchema>(
     {
       slug: {
         type: String,
-        required: true,
-        unique: true,
+        required: [true, 'Slug is required'],
+        unique: [true, 'Slug already exists'],
       },
       name: {
         type: String,
-        required: true,
+        required: [true, 'Name is required'],
       },
       cover: {
         type: String,
@@ -99,22 +99,23 @@ export const product = createMongooseSchema<ProductSchema>(
       },
       currency: {
         type: String,
-        required: true,
+        required: [true, 'Currency is required'],
         enum: currencies,
       },
       price: {
         type: Number,
-        required: true,
+        required: [true, 'Price is required'],
+        immutable: true,
       },
       description: {
         type: String,
-        required: true,
+        required: [true, 'Description is required'],
       },
       content: {
         type: {
           url: {
             type: String,
-            required: false,
+            required: true,
           },
           format: {
             type: String,
@@ -132,16 +133,16 @@ export const product = createMongooseSchema<ProductSchema>(
       user: {
         type: Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
+        required: [true, 'User is required'],
       },
       details: {
         type: [{ label: String, value: String }],
-        required: true,
+        required: [true, 'Details are required'],
       },
       category: {
         type: String,
-        required: true,
         enum: Object.keys(categories),
+        required: [true, 'Category is required'],
       },
       sales: {
         type: [saleSchema],

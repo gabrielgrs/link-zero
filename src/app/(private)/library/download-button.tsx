@@ -11,8 +11,8 @@ export function DownloadButton({ productId }: { productId: string }) {
       window.open(data.url, '_blank')
       toast.success('Download started!')
     },
-    onError: () => {
-      toast.error('Failed. Try again later.')
+    onError: (error) => {
+      toast.error(error.err.message || 'Failed. Try again later.')
     },
   })
 
