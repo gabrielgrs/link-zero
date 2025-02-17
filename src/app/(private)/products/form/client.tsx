@@ -1,6 +1,6 @@
 'use client'
 
-import { createProduct } from '@/actions/product'
+import { createProduct, updateProduct } from '@/actions/product'
 import { Fieldset } from '@/components/fieldset'
 import { Column, Grid } from '@/components/grid'
 import { Link } from '@/components/link'
@@ -10,7 +10,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/hooks/use-auth'
 import { mimeTypes } from '@/libs/mongoose/schemas/product'
@@ -20,7 +19,7 @@ import { Currency, currencies } from '@/utils/constants/currencies'
 import { requiredField } from '@/utils/messages'
 import { ChevronDown, Trash } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { Fragment, useState } from 'react'
+import { Fragment } from 'react'
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form'
 import slugify from 'slugify'
 import { toast } from 'sonner'
@@ -34,7 +33,7 @@ const defaultValues = {
   price: 0,
   category: '',
   currency: Object.values(currencies)[0] as Currency,
-  characteristics: [] as { label: string; value: string }[],
+  details: [] as { label: string; value: string }[],
   slug: '',
   url: '',
   file: '',
@@ -42,9 +41,8 @@ const defaultValues = {
 
 export function ProductForm({ initialValues }: { initialValues?: typeof defaultValues }) {
   const isEdition = Boolean(initialValues?._id)
-  const [isUrl, setIsUrl] = useState(Boolean(initialValues?.url))
   const { push } = useRouter()
-  const { control, register, formState, handleSubmit, resetField } = useForm({
+  const { control, register, formState, handleSubmit } = useForm({
     defaultValues: initialValues ? { ...defaultValues, ...initialValues } : defaultValues,
   })
   const name = useWatch({ control, name: 'name' })
@@ -54,12 +52,12 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
   const category = useWatch({ control, name: 'category' })
   const description = useWatch({ control, name: 'description' })
   const slug = useWatch({ control, name: 'slug' })
-  const characteristics = useWatch({ control, name: 'characteristics' })
-  const characteristicsFieldArray = useFieldArray({ control, name: 'characteristics' })
+  const details = useWatch({ control, name: 'details' })
+  const detailsFieldArray = useFieldArray({ control, name: 'details' })
 
   const { user } = useAuth()
 
-  const action = useServerAction(createProduct, {
+  const action = useServerAction(isEdition ? updateProduct : createProduct, {
     onSuccess: () => {
       toast.success('Success!')
       push('/products')
@@ -74,43 +72,21 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
       <form onSubmit={handleSubmit((values) => action.execute(values))}>
         <Grid>
           <Column size={12}>
-            <h1>Publish a new product</h1>
+            <h1>{isEdition ? 'Edit' : 'Publish a new'} product</h1>
           </Column>
 
           {!isEdition && (
             <>
               <Column size={12} className='px-8'>
-                {isUrl ? (
-                  <p className={cn('text-xs text-destructive')}>
-                    We cant protect custom links, prefer to use custom files
-                  </p>
-                ) : (
-                  <p className={cn('text-xs text-muted-foreground')}>
-                    Aceppted formats:{' '}
-                    {Object.values(mimeTypes)
-                      .map((item) => item.split('/')[1])
-                      .join(', ')}
-                  </p>
-                )}
+                <p className={cn('text-xs text-muted-foreground')}>
+                  Aceppted formats:{' '}
+                  {Object.values(mimeTypes)
+                    .map((item) => item.split('/')[1])
+                    .join(', ')}
+                </p>
               </Column>
 
-              <Column size={2}>
-                <Fieldset label='Field type'>
-                  <div className='flex items-center gap-1 h-10'>
-                    <Label>URL</Label>
-                    <Switch
-                      checked={!isUrl}
-                      onCheckedChange={(value) => {
-                        resetField('file')
-                        setIsUrl(!value)
-                      }}
-                    />
-                    <Label>File</Label>
-                  </div>
-                </Fieldset>
-              </Column>
-
-              <Column size={10}>
+              <Column size={12}>
                 <Fieldset label='Content' error={formState.errors.file?.message} info='Max of 5mb'>
                   <Controller
                     control={control}
@@ -119,9 +95,8 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
                       return (
                         <Input
                           {...register('file', { required: requiredField })}
-                          type={isUrl ? 'url' : 'file'}
+                          type='file'
                           value={field.value}
-                          placeholder={isUrl ? 'Product URL' : 'Product file'}
                           accept={Object.values(mimeTypes).join(', ')}
                           onChange={(event) => {
                             const file = event.target.files?.[0]
@@ -269,34 +244,31 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
                 <Label>Characteristics</Label>
               </Column>
 
-              {characteristicsFieldArray.fields.map((f, index) => (
+              {detailsFieldArray.fields.map((f, index) => (
                 <Fragment key={f.id}>
-                  <Column size={5}>
-                    <Input
-                      {...register(`characteristics.${index}.label`, { required: requiredField })}
-                      placeholder='Label'
-                    />
+                  <Column size={2} className='flex items-center text-sm'>
+                    #{index + 1} Characteristic
                   </Column>
-                  <Column size={5}>
-                    <Input
-                      {...register(`characteristics.${index}.value`, { required: requiredField })}
-                      placeholder='value'
-                    />
+                  <Column size={4}>
+                    <Input {...register(`details.${index}.label`, { required: requiredField })} placeholder='Label' />
                   </Column>
-                  <Column size={2}>
-                    <Button type='button' variant='destructive'>
+                  <Column size={4}>
+                    <Input {...register(`details.${index}.value`, { required: requiredField })} placeholder='value' />
+                  </Column>
+                  <Column size={1}>
+                    <Button type='button' variant='destructive' onClick={() => detailsFieldArray.remove(index)}>
                       <Trash />
                     </Button>
                   </Column>
                 </Fragment>
               ))}
-              <Column size={12}>
+              <Column size={12} className='flex justify-center'>
                 <Button
                   type='button'
                   variant='outline'
-                  onClick={() => characteristicsFieldArray.append({ label: '', value: '' })}
+                  onClick={() => detailsFieldArray.append({ label: '', value: '' })}
                 >
-                  Add characteristic
+                  Add detail
                 </Button>
               </Column>
             </Grid>
@@ -314,7 +286,7 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
               cover={cover}
               user={user}
               description={description}
-              characteristics={characteristics}
+              details={details}
               category={category as keyof typeof categories}
               slug={slug}
             />
@@ -328,7 +300,9 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
               Cancel
             </Button>
 
-            <Button type='submit'>Save product</Button>
+            <Button type='submit' loading={action.isPending || action.isSuccess}>
+              Save product
+            </Button>
           </Column>
         </Grid>
       </form>

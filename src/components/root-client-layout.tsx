@@ -1,4 +1,5 @@
 'use client'
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import dynamic from 'next/dynamic'
 const NextThemesProvider = dynamic(() => import('next-themes').then((e) => e.ThemeProvider), {

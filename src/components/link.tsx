@@ -1,12 +1,15 @@
+import { cn } from '@/utils/cn'
+import { Loader2 } from 'lucide-react'
 import NextLink, { type LinkProps } from 'next/link'
 import type { AnchorHTMLAttributes } from 'react'
 
-type Props = LinkProps & AnchorHTMLAttributes<HTMLAnchorElement>
+type Props = LinkProps & AnchorHTMLAttributes<HTMLAnchorElement> & { loading?: boolean }
 
-export function Link({ prefetch = false, children, className, ...rest }: Props) {
+export function Link({ prefetch = false, children, className, loading, ...rest }: Props) {
   return (
-    <NextLink {...rest} prefetch={prefetch} className={className}>
+    <NextLink {...rest} prefetch={prefetch} className={cn('flex items-center gap-2', className)}>
       {children}
+      {loading && <Loader2 size={16} className='animate-spin' />}
     </NextLink>
   )
 }

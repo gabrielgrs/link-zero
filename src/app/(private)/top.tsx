@@ -8,7 +8,7 @@ import { Fragment } from 'react'
 export function Top() {
   const pathname = usePathname()
 
-  const title = pathname.slice(1, pathname.length).split('/')
+  const title = pathname.slice(1, pathname.length - 1).split('/')
 
   return (
     <header className='h-20 border-b flex items-center justify-center gap-2 text-sm'>

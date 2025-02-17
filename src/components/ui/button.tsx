@@ -6,18 +6,16 @@ import { cn } from '@/utils/cn'
 import { Loader2 } from 'lucide-react'
 
 const buttonVariants = cva(
-  'inline-flex group relative items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'flex relative items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
-        default: 'bg-primary border-2 border-primary text-primary-foreground hover:bg-primary/90 after:border-primary',
-        destructive:
-          'bg-destructive text-destructive-foreground hover:bg-destructive/90 after:border-destructive border-primary',
-        outline: 'border border-primary bg-background hover:bg-accent hover:text-accent-foreground after:border-none',
-        secondary:
-          'bg-secondary border border-primary text-secondary-foreground hover:bg-secondary/80 after:border-secondary-foreground',
-        ghost: 'bg-none border-none after:border-none before:border-none before:border-none',
-        // link: 'text-primary underline-offset-4 hover:underline',
+        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        ghost: 'hover:bg-accent hover:text-accent-foreground',
+        link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {
         default: 'h-10 px-4 py-2',
@@ -41,32 +39,16 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, children, loading, type = 'button', ...props }, ref) => {
+  ({ className, variant, size, asChild = false, children, loading, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button'
     return (
-      <Comp
-        className={cn(
-          buttonVariants({ variant, size, className }),
-          'before:bg-inherit before:w-full before:h-full before:absolute before:bottom-0 before:left-0 before:z-10 before:duration-500 before:border-inherit',
-          'after:border after:w-full after:h-full after:absolute after:-right-1.5 after:-bottom-1.5 after:duration-300 after:hover:-translate-x-[5%] after:hover:scale-x-90',
-        )}
-        type={type}
-        ref={ref}
-        {...props}
-      >
-        <div className={cn('relative z-10')}>
-          <div className={cn('flex items-center gap-1', loading ? 'opacity-0' : 'opacity-100')}>{children}</div>
-          {loading && (
-            <div className='absolute left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] bg-inherit'>
-              <Loader2 size={20} className='animate-spin' />
-            </div>
-          )}
-        </div>
+      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props}>
+        {children}
+        {loading && <Loader2 size={16} className='animate-spin' />}
       </Comp>
     )
   },
 )
-
 Button.displayName = 'Button'
 
 export { Button, buttonVariants }

@@ -4,6 +4,7 @@ import { db } from '@/libs/mongoose'
 import { sendEmailAsParagraphs } from '@/libs/resend'
 import { createOrFindCustomerByEmail } from '@/libs/stripe/utils'
 import { parseData } from '@/utils/action'
+import { cookiesConfigs } from '@/utils/cookies/configs'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import slugify from 'slugify'
@@ -83,13 +84,7 @@ export const authenticate = createServerAction()
       role: userCreationResponse.role,
     })
     const cookiesData = await cookies()
-    cookiesData.set('token', token, {
-      httpOnly: true,
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 30,
-      secure: process.env.NODE_ENV === 'production',
-    })
+    cookiesData.set('token', token, cookiesConfigs)
 
     return {
       status: 'AUTHORIZED',

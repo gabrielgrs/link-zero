@@ -4,11 +4,8 @@ import { ProductSchema } from '@/libs/mongoose/schemas/product'
 import { UserSchema } from '@/libs/mongoose/schemas/user'
 import { categories } from '@/utils/categories'
 import { cn } from '@/utils/cn'
-import { useState } from 'react'
 import { Link } from './link'
-import { Button } from './ui/button'
-import { Input } from './ui/input'
-import { Label } from './ui/label'
+import { Button, buttonVariants } from './ui/button'
 
 type Props = Omit<
   ProductSchema,
@@ -16,9 +13,8 @@ type Props = Omit<
 > & {
   user: UserSchema
   viewAsCard?: boolean
-  onSubmit?: (email: string) => void
+  onSubmit?: () => void
   isSubmitting?: boolean
-  initialEmail?: string
 }
 
 export function Product({
@@ -27,19 +23,16 @@ export function Product({
   price,
   user,
   description,
-  characteristics,
+  details,
   category,
   currency,
   slug,
   viewAsCard = false,
-  initialEmail = '',
-  isSubmitting,
   onSubmit,
+  isSubmitting,
 }: Props) {
-  const [email, setEmail] = useState(initialEmail)
-
   return (
-    <div className='border'>
+    <div className='border shadow'>
       <div
         className={cn('h-40 bg-foreground/5 w-full', viewAsCard && 'h-24')}
         style={{
@@ -78,32 +71,21 @@ export function Product({
                 </li>
               )}
               {!viewAsCard &&
-                characteristics.map(({ label, value }) => (
+                details.map(({ label, value }) => (
                   <li key={`${label}_${value}`} className='flex justify-between items-center'>
                     <strong>{label}</strong> {value}
                   </li>
                 ))}
             </ul>
           </div>
-          {!viewAsCard && (
-            <div className='border-t p-2'>
-              <Label>Buyer email</Label>
-              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder='Type your e-mail' />
-            </div>
-          )}
+
           <div className='px-2 pb-2'>
             {viewAsCard ? (
-              <Button type='button' className='w-full' loading={isSubmitting}>
-                <Link href={`/product/${slug}`}>Buy now</Link>
-              </Button>
+              <Link href={`/product/${slug}`} className={cn(buttonVariants({}), 'w-full')} loading={isSubmitting}>
+                Buy now
+              </Link>
             ) : (
-              <Button
-                type='button'
-                className='w-full'
-                loading={isSubmitting}
-                onClick={() => onSubmit?.(email)}
-                disabled={!email}
-              >
+              <Button type='button' className='w-full' loading={isSubmitting} onClick={onSubmit}>
                 Buy now
               </Button>
             )}

@@ -4,7 +4,7 @@ import { activeOrInactiveProduct, getUserProducts } from '@/actions/product'
 import { Column, Grid } from '@/components/grid'
 import { Link } from '@/components/link'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { ServerActionResponse } from '@/utils/action'
@@ -36,8 +36,8 @@ export function ProductsTable({ products: initialProducts }: Props) {
       <Grid>
         <Column size={12} className='flex justify-between items-center gap-2'>
           <h1>Products</h1>
-          <Link href='/products/form'>
-            <Button>New product</Button>
+          <Link href='/products/form' className={buttonVariants()}>
+            New product
           </Link>
         </Column>
         <Column size={12}>
@@ -81,11 +81,11 @@ export function ProductsTable({ products: initialProducts }: Props) {
                         )}
                       </button>
                     </TableCell>
-                    <TableCell className='text-right'>
+                    <TableCell className='flex items-center justify-end gap-2'>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant='outline'>
-                            <EllipsisVertical className='text-muted-foreground' />
+                          <Button variant='outline' size='icon'>
+                            <EllipsisVertical className='text-muted-foreground' size={20} />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>

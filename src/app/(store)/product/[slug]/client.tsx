@@ -35,8 +35,10 @@ export function ProductClient({ product }: Props) {
         <Product
           {...product}
           isSubmitting={action.isPending || action.isSuccess}
-          initialEmail={user?.email}
-          onSubmit={() => action.execute({ email: 'grxgabriel@gmail.com', productId: product._id })}
+          onSubmit={() => {
+            if (user) return action.execute({ email: user.email, productId: product._id })
+            return push(`/auth?redirectTo=/product/${product.slug}`)
+          }}
         />
       </main>
       <footer className='flex justify-center items-center gap-2 text-muted-foreground py-4'>

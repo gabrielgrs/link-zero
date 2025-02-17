@@ -4,8 +4,9 @@ import { getRandomProducts } from '@/actions/product'
 import { Link } from '@/components/link'
 import { Logo } from '@/components/logo'
 import { Product } from '@/components/product'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { ServerActionResponse } from '@/utils/action'
+import { cn } from '@/utils/cn'
 import { APP_DESCRIPTION, APP_NAME, CONTACT_EMAIL } from '@/utils/constants/brand'
 import { SALE_PERCENTAGE, SALE_PRICE, WITHDRAWAL_FEE } from '@/utils/constants/pricing'
 import { ArrowRight } from 'lucide-react'
@@ -27,24 +28,22 @@ export function HomeClient({ products }: Props) {
         <nav className='flex items-center text-muted-foreground text-sm h-full'>
           <Link
             href='/#pricing'
-            className='h-full flex items-center border-r border-l px-8 hover:text-primary duration-500'
+            className='h-full flex items-center border-r border-l px-4 hover:text-primary duration-500'
           >
             Pricing
           </Link>
-          <Link href='/#faq' className='h-full flex items-center border-r px-8 hover:text-primary duration-500'>
+          <Link href='/#faq' className='h-full flex items-center border-r px-4 hover:text-primary duration-500'>
             faq
           </Link>
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className='h-full flex items-center border-r px-8 hover:text-primary duration-500'
+            className='h-full flex items-center border-r px-4 hover:text-primary duration-500'
           >
-            {theme === 'dark' ? 'Light' : 'Dark'} theme
+            Theme
           </button>
-          <Button className='ml-4'>
-            <Link href='/dashboard' className='flex items-center gap-2 group'>
-              Dashboard <ArrowRight size={16} className='duration-500 group-hover:translate-x-2' />
-            </Link>
-          </Button>
+          <Link href='/dashboard' className={cn(buttonVariants(), 'group ml-4')}>
+            Dashboard <ArrowRight size={16} className='duration-500 group-hover:translate-x-2' />
+          </Link>
         </nav>
       </header>
       <main>
@@ -53,11 +52,11 @@ export function HomeClient({ products }: Props) {
             <p>Badge</p>
             <h1>{APP_DESCRIPTION}</h1>
             <div className='flex items-center gap-4'>
-              <Link href='/dashboard'>
-                <Button>Start selling</Button>
+              <Link href='/dashboard' className={buttonVariants()}>
+                Start selling
               </Link>
-              <Link href='/contact'>
-                <Button variant='secondary'>Get in touch</Button>
+              <Link href='/contact' className={buttonVariants({ variant: 'secondary' })}>
+                Get in touch
               </Link>
             </div>
           </div>
@@ -73,8 +72,8 @@ export function HomeClient({ products }: Props) {
           </div>
         </section>
 
-        <section className='grid grid-cols-2' id='pricing'>
-          <div className='col-span-2 bg-yellow-400 text-black text-center px-10 py-20 space-y-4'>
+        <section className='grid grid-cols-1 md:grid-cols-2' id='pricing'>
+          <div className='col-span-1 md:col-span-2 bg-yellow-400 text-black text-center px-10 py-20 space-y-4'>
             <span className='text-lg'>Pricing</span>
             <p className='text-2xl md:text-5xl font-semibold max-w-lg mx-auto'>Pay only if you sell</p>
           </div>

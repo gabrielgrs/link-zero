@@ -1,6 +1,6 @@
 import { Geist_Mono as Font } from 'next/font/google'
 import './globals.css'
-import { ClientLayout } from '@/root-client-layout'
+import { ClientLayout } from '@/components/root-client-layout'
 import { generateMetadata } from '@/utils/metadata'
 import NextTopLoader from 'nextjs-toploader'
 import type { ReactNode } from 'react'

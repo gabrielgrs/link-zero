@@ -20,7 +20,7 @@ export default async function Page({ params }: Props) {
         name: product.name,
         price: product.price,
         slug: product.slug,
-        characteristics: product.characteristics,
+        details: product.details,
         url: product.content.url,
         file: '',
       }}
