@@ -5,7 +5,6 @@ import { db } from '@/libs/mongoose'
 import { sendEmailAsParagraphs } from '@/libs/resend'
 import { createOrFindCustomerByEmail } from '@/libs/stripe/utils'
 import { parseData } from '@/utils/action'
-import { cookiesConfigs } from '@/utils/cookies/configs'
 import { jwtDecode } from 'jwt-decode'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -85,12 +84,8 @@ export const authenticate = createServerAction()
       _id: userCreationResponse._id,
       role: userCreationResponse.role,
     })
-    const cookiesData = await cookies()
-    cookiesData.set('token', token, cookiesConfigs)
 
-    return {
-      status: 'AUTHORIZED',
-    }
+    return redirect(`/auth?token=${token}`)
   })
 
 export const getAuthenticatedUser = authProcedure.handler(async ({ ctx }) => {
@@ -144,8 +139,6 @@ export const signInWithGoogle = createServerAction()
       _id: userCreationResponse._id,
       role: userCreationResponse.role,
     })
-    const cookiesData = await cookies()
-    cookiesData.set('token', token, cookiesConfigs)
 
-    return true
+    return redirect(`/auth?token=${token}`)
   })

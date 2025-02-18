@@ -1,10 +1,10 @@
 'use client'
 
+import { Link } from '@/components/link'
 import { Logo } from '@/components/logo'
 import { cn } from '@/utils/cn'
 import { ChartArea, Library, LogOut, LucideIcon, Moon, PackageSearch, Settings, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ReactNode } from 'react'
 
