@@ -93,6 +93,7 @@ export const linkAccount = authProcedure.onError(console.error).handler(async ({
     email: ctx.user.email,
     capabilities: {
       transfers: { requested: true },
+      card_payments: { requested: true },
     },
     metadata: {
       userId: ctx.user._id.toString(),
