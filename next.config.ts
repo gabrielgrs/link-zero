@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
     },
   },
   trailingSlash: true,
+  env: {
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+  },
 }
 
 export default nextConfig

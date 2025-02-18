@@ -1,10 +1,12 @@
 'use server'
+
 import { createToken } from '@/libs/jose'
 import { db } from '@/libs/mongoose'
 import { sendEmailAsParagraphs } from '@/libs/resend'
 import { createOrFindCustomerByEmail } from '@/libs/stripe/utils'
 import { parseData } from '@/utils/action'
 import { cookiesConfigs } from '@/utils/cookies/configs'
+import { jwtDecode } from 'jwt-decode'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import slugify from 'slugify'
@@ -112,3 +114,38 @@ export const signOut = createServerAction().handler(async () => {
 
   return true
 })
+
+export const signInWithGoogle = createServerAction()
+  .input(z.object({ googleJWT: z.string().nonempty() }))
+  .handler(async ({ input }) => {
+    type GoogleDecodedToken = {
+      email: string
+      email_verified: boolean
+      name: string
+      picture: string
+      given_name: string
+      family_name: string
+    }
+
+    const usersCount = await db.user.countDocuments()
+
+    const response: GoogleDecodedToken = await jwtDecode(input.googleJWT)
+
+    if (!response.email_verified) throw new Error('Google email not verified')
+
+    const userCreationResponse = await createOrFindUser(response.email, {
+      name: `${response.given_name} ${response.family_name}`,
+      username: `${response.email.split('@')[0]}-${usersCount}`,
+    })
+
+    if (!userCreationResponse) throw new Error('Failed to create user')
+
+    const token = await createToken({
+      _id: userCreationResponse._id,
+      role: userCreationResponse.role,
+    })
+    const cookiesData = await cookies()
+    cookiesData.set('token', token, cookiesConfigs)
+
+    return true
+  })

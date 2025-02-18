@@ -3,13 +3,14 @@
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-import { authenticate } from '@/actions/auth'
+import { authenticate, signInWithGoogle } from '@/actions/auth'
 import { Fieldset } from '@/components/fieldset'
 import { Link } from '@/components/link'
 import { Logo } from '@/components/logo'
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp'
 import { APP_NAME } from '@/utils/constants/brand'
 import { requiredField } from '@/utils/messages'
+import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google'
 import { ChevronLeft } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
@@ -28,6 +29,12 @@ export function AuthClient({ redirectTo }: Props) {
   const form = useForm({ defaultValues: { email: '', code: '', name: '', username: '' } })
   const [isWaitingTheCode, setIsWaitingTheCode] = useState(false)
   const [needRegister, setNeedRegister] = useState(false)
+
+  const googleAuthAction = useServerAction(signInWithGoogle, {
+    onSuccess: () => {
+      push('/dashboard')
+    },
+  })
 
   const action = useServerAction(authenticate, {
     onError: (error) => {
@@ -147,8 +154,29 @@ export function AuthClient({ redirectTo }: Props) {
             {needRegister && !isWaitingTheCode && 'Sign up'}
             {!isWaitingTheCode && !needRegister && 'Sign in'}
           </Button>
+
+          {process.env.GOOGLE_CLIENT_SECRET && (
+            <>
+              <div className='flex items-center justify-center gap-2 relative'>
+                <div className='absolute bg-foreground/20 h-[1px] w-full' />
+                <span className='relative z-10 bg-background px-2'>Or</span>
+              </div>
+
+              <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_SECRET}>
+                <GoogleLogin
+                  onSuccess={(credentialResponse) =>
+                    googleAuthAction.execute({ googleJWT: credentialResponse.credential! })
+                  }
+                  onError={() => {
+                    toast.error('Failed to sign in with Google')
+                  }}
+                />
+              </GoogleOAuthProvider>
+            </>
+          )}
         </main>
       </form>
+
       <footer className='p-4 text-center flex items-center justify-center gap-2 text-muted-foreground'>
         Made by <Logo className='text-base underline underline-offset-4' />
       </footer>
