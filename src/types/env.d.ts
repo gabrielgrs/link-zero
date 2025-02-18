@@ -8,6 +8,7 @@ declare namespace NodeJS {
     BLOB_READ_WRITE_TOKEN: string
     STRIPE_SECRET_KEY: string
     STRIPE_WEBHOOK_SECRET: string
+    STRIPE_CLIENT_ID: string
     GOOGLE_CLIENT_SECRET?: string
   }
 }

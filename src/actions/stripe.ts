@@ -87,32 +87,36 @@ export const activeOrInactiveProductAndPrice = authProcedure
     }
   })
 
-export const linkAccount = authProcedure.onError(console.error).handler(async ({ ctx }) => {
-  const account = await stripeClient.accounts.create({
-    type: 'express',
-    email: ctx.user.email,
-    capabilities: {
-      transfers: { requested: true },
-      card_payments: { requested: true },
-    },
-    metadata: {
-      userId: ctx.user._id.toString(),
-    },
-  })
-
+export const linkAccount = authProcedure.handler(async () => {
   const domain = await getDomain()
 
-  const accountLink = await stripeClient.accountLinks.create({
-    account: account.id,
-    refresh_url: `${domain}/dashboard`,
-    return_url: `${domain}/dashboard`,
-    type: 'account_onboarding',
+  const response = await stripeClient.oauth.authorizeUrl({
+    response_type: 'code',
+    client_id: process.env.STRIPE_CLIENT_ID,
+    scope: 'read_write',
+    redirect_uri: `${domain}/api/stripe/oauth/callback`,
   })
 
   return parseData({
-    url: accountLink.url,
+    url: response,
   })
 })
+
+export const linkStripeAccountByCode = authProcedure
+  .input(z.object({ code: z.string().nonempty() }))
+  .handler(async ({ input, ctx }) => {
+    const response = await stripeClient.oauth.token({
+      grant_type: 'authorization_code',
+      code: input.code,
+    })
+
+    await db.user.findOneAndUpdate(
+      { _id: ctx.user._id, stripeAccountId: null },
+      { stripeAccountId: response.stripe_user_id },
+    )
+
+    return true
+  })
 
 export const createCheckout = authProcedure
   .input(z.object({ productId: z.string(), email: z.string().nonempty() }))
