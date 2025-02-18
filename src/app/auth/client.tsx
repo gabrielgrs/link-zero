@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp'
 import { APP_DESCRIPTION, APP_NAME } from '@/utils/constants/brand'
 import { requiredField } from '@/utils/messages'
-import { GoogleOAuthProvider } from '@react-oauth/google'
+// import { GoogleOAuthProvider } from '@react-oauth/google'
 import { ChevronLeft } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
@@ -18,7 +18,7 @@ import { Controller, useForm } from 'react-hook-form'
 import slugify from 'slugify'
 import { toast } from 'sonner'
 import { useServerAction } from 'zsa-react'
-import { GoogleButton } from './google-button'
+// import { GoogleButton } from './google-button'
 
 type Props = {
   redirectTo?: string
@@ -152,7 +152,7 @@ export function AuthClient({ redirectTo }: Props) {
             {!isWaitingTheCode && !needRegister && 'Sign in'}
           </Button>
 
-          {process.env.GOOGLE_CLIENT_SECRET && (
+          {/* {process.env.GOOGLE_CLIENT_SECRET && (
             <>
               <div className='flex items-center justify-center gap-2 relative'>
                 <div className='w-full h-[1px] bg-foreground/20' />
@@ -164,7 +164,7 @@ export function AuthClient({ redirectTo }: Props) {
                 <GoogleButton />
               </GoogleOAuthProvider>
             </>
-          )}
+          )} */}
         </main>
       </form>
 
