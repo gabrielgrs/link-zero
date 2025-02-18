@@ -144,3 +144,23 @@ export const signInWithGoogle = createServerAction()
 
     return redirect(`/auth?token=${token}`)
   })
+
+export const updateUser = authProcedure
+  .input(z.object({ name: z.string().nonempty(), username: z.string(), bio: z.string() }))
+  .handler(async ({ input, ctx }) => {
+    await db.user.findOneAndUpdate(
+      { _id: ctx.user._id },
+      {
+        name: input.name,
+        username: slugify(input.username ?? '', {
+          lower: true,
+          strict: true,
+          replacement: '-',
+          trim: false,
+        }),
+        bio: input.bio,
+      },
+    )
+
+    return true
+  })

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useAuth } from '@/hooks/use-auth'
 import { ServerActionResponse } from '@/utils/action'
 import { EllipsisVertical } from 'lucide-react'
 import { useState } from 'react'
@@ -19,6 +20,7 @@ type Props = {
 }
 
 export function ProductsTable({ products: initialProducts }: Props) {
+  const { user } = useAuth()
   const [products, setProducts] = useState(initialProducts)
 
   const publishOrUnpublishProductAction = useServerAction(activeOrInactiveProduct, {
@@ -36,9 +38,13 @@ export function ProductsTable({ products: initialProducts }: Props) {
       <Grid>
         <Column size={12} className='flex justify-between items-center gap-2'>
           <h1>Products</h1>
-          <Link href='/products/form' className={buttonVariants()}>
-            New product
-          </Link>
+          {user.stripeAccountId ? (
+            <Link href='/products/form' className={buttonVariants()}>
+              New product
+            </Link>
+          ) : (
+            <Button disabled>New product</Button>
+          )}
         </Column>
         <Column size={12}>
           <Table>

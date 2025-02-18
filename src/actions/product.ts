@@ -78,6 +78,8 @@ export const createProduct = authProcedure
     } as Record<keyof ProductSchema | 'file', any>),
   )
   .handler(async ({ ctx, input }) => {
+    if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
+
     const content = await getContent(input.file[0] instanceof File ? input.file[0] : String(input))
 
     const product = await db.product.create({
@@ -117,6 +119,8 @@ export const updateProduct = authProcedure
     } as Record<keyof ProductSchema | 'file', any>),
   )
   .handler(async ({ ctx, input }) => {
+    if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
+
     const { _id, ...rest } = input
 
     const product = await db.product.findOneAndUpdate({ _id, user: ctx.user._id }, { ...rest }).lean()
