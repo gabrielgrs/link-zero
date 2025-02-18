@@ -1,11 +1,13 @@
 'use server'
 
 import { db } from '@/libs/mongoose'
+import { UserSchema } from '@/libs/mongoose/schemas/user'
 import stripeClient from '@/libs/stripe'
+import { parseData } from '@/utils/action'
 import { getDomain } from '@/utils/action/server'
 import { currencies } from '@/utils/constants/currencies'
+import { PLATFORM_FEE } from '@/utils/constants/pricing'
 import { z } from 'zod'
-import { createServerAction } from 'zsa'
 import { createOrFindUser } from './auth'
 import { authProcedure } from './procedures'
 
@@ -85,18 +87,45 @@ export const activeOrInactiveProductAndPrice = authProcedure
     }
   })
 
-export const createCheckout = createServerAction()
+export const linkAccount = authProcedure.onError(console.error).handler(async ({ ctx }) => {
+  const account = await stripeClient.accounts.create({
+    type: 'express',
+    email: ctx.user.email,
+    capabilities: {
+      transfers: { requested: true },
+    },
+    metadata: {
+      userId: ctx.user._id.toString(),
+    },
+  })
+
+  const domain = await getDomain()
+
+  const accountLink = await stripeClient.accountLinks.create({
+    account: account.id,
+    refresh_url: `${domain}/dashboard`,
+    return_url: `${domain}/dashboard`,
+    type: 'account_onboarding',
+  })
+
+  return parseData({
+    url: accountLink.url,
+  })
+})
+
+export const createCheckout = authProcedure
   .input(z.object({ productId: z.string(), email: z.string().nonempty() }))
-  .onError(console.log)
   .handler(async ({ input }) => {
     const domain = await getDomain()
 
     const user = await createOrFindUser(input.email, { username: input.email.split('@')[0] })
     if (!user) throw new Error('User is required')
 
-    const product = await db.product.findOne({ _id: input.productId })
+    const product = await db.product.findOne({ _id: input.productId }).populate<{ user: UserSchema }>('user').lean()
     if (!product) throw new Error('Not found')
     await db.product.updateOne({ _id: product._id }, { $push: { sales: { user: user._id, price: product.price } } })
+
+    if (!product.user.stripeAccountId) throw new Error('User is not connected to stripe')
 
     const { url } = await stripeClient.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -109,6 +138,12 @@ export const createCheckout = createServerAction()
       customer: user.stripeCustomerId,
       metadata: {
         productId: product._id.toString(),
+      },
+      payment_intent_data: {
+        application_fee_amount: PLATFORM_FEE,
+        transfer_data: {
+          destination: product.user.stripeAccountId,
+        },
       },
     })
 

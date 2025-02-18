@@ -8,8 +8,8 @@ import { buttonVariants } from '@/components/ui/button'
 import { ServerActionResponse } from '@/utils/action'
 import { cn } from '@/utils/cn'
 import { APP_DESCRIPTION, APP_NAME, CONTACT_EMAIL } from '@/utils/constants/brand'
-import { SALE_PERCENTAGE, SALE_PRICE, WITHDRAWAL_FEE } from '@/utils/constants/pricing'
-import { ArrowRight } from 'lucide-react'
+import { PLATFORM_FEE } from '@/utils/constants/pricing'
+import { ArrowRight, ExternalLink } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { FAQ } from './faq'
 import { Sales } from './sales'
@@ -74,24 +74,24 @@ export function HomeClient({ products }: Props) {
           </div>
         </section>
 
-        <section className='grid grid-cols-1 md:grid-cols-2' id='pricing'>
-          <div className='col-span-1 md:col-span-2 bg-yellow-400 text-black text-center px-10 py-20 space-y-4'>
-            <span className='text-lg'>Pricing</span>
-            <p className='text-2xl md:text-5xl font-semibold max-w-lg mx-auto'>Pay only if you sell</p>
-          </div>
-          <div className='bg-blue-400 text-black text-center px-10 py-20 space-y-2'>
-            <p className='text-2xl md:text-5xl font-semibold max-w-lg mx-auto'>
-              {SALE_PERCENTAGE}% +{' '}
-              {Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(SALE_PRICE / 100)}
-            </p>
-            <p className='text-lg'>for each sale</p>
-          </div>
-          <div className='bg-green-400 text-black text-center px-10 py-20 space-y-2'>
-            <p className='text-2xl md:text-5xl font-semibold max-w-lg mx-auto'>
-              {Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(WITHDRAWAL_FEE / 100)}
-            </p>
-            <p className='text-lg'>Withdrawal Fee</p>
-          </div>
+        <section
+          id='pricing'
+          className='flex items-center justify-center flex-col py-10 gap-2 text-center bg-accent text-accent-foreground'
+        >
+          <span className='text-lg'>Pricing</span>
+          <p className='font-semibold max-w-lg mx-auto flex items-end gap-2'>
+            <span className='text-2xl md:text-5xl'>
+              {Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(PLATFORM_FEE / 100)}
+            </span>
+            / per transaction
+          </p>
+          <p className='flex items-center gap-1'>
+            {' '}
+            + Stripe fees{' '}
+            <Link href='https://stripe.com/pricing' target='_blank' className='text-xs'>
+              (click here to learn more <ExternalLink size={12} />)
+            </Link>
+          </p>
         </section>
         <section className='bg-foreground/5' id='faq'>
           <div className=' text-center px-10 py-20 space-y-4'>

@@ -25,6 +25,18 @@ async function checkoutSessionUpdate(
   return NextResponse.json({ received: true }, { status: 200 })
 }
 
+async function accountUpdated(session: Stripe.Account) {
+  if (!session.metadata) throw new Error('Session metadata not found')
+
+  const updatedUser = await db.user.findOneAndUpdate({
+    _id: session.metadata.userId,
+    stripeAccountId: session.id,
+  })
+
+  if (!updatedUser) throw new Error('User not found')
+  return NextResponse.json({ received: true }, { status: 200 })
+}
+
 export async function POST(req: Request) {
   try {
     const requestText = await req.text()
@@ -39,6 +51,10 @@ export async function POST(req: Request) {
 
     if (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed') {
       return checkoutSessionUpdate(event.data.object, 'failure')
+    }
+
+    if (event.type === 'account.updated') {
+      return accountUpdated(event.data.object)
     }
 
     return NextResponse.json({ received: true })
