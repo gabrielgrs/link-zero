@@ -3,7 +3,7 @@
 import { createToken } from '@/libs/jose'
 import { db } from '@/libs/mongoose'
 import { sendEmailAsParagraphs } from '@/libs/resend'
-import { createOrFindCustomerByEmail } from '@/libs/stripe/utils'
+import { createOrFindCustomerByEmail, findAccountByEmail } from '@/libs/stripe/utils'
 import { parseData } from '@/utils/action'
 import { jwtDecode } from 'jwt-decode'
 import { cookies } from 'next/headers'
@@ -25,6 +25,7 @@ export async function createOrFindUser(email: string, fields: RequiredUserFields
   if (!fields.username) return null
 
   const customer = await createOrFindCustomerByEmail(email)
+  const accountId = await findAccountByEmail(email)
 
   return db.user.create({
     email,
@@ -36,6 +37,7 @@ export async function createOrFindUser(email: string, fields: RequiredUserFields
       trim: false,
     }),
     stripeCustomerId: customer.id,
+    stripeAccountId: accountId,
   })
 }
 

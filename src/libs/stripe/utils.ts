@@ -14,3 +14,9 @@ export async function createOrFindCustomerByEmail(email: string) {
   if (customer) return customer
   return createCustomer(email)
 }
+
+export async function findAccountByEmail(email: string) {
+  const accounts = await stripeClient.accounts.list()
+  const found = accounts.data.find((account) => account.email === email)
+  return found?.id
+}
