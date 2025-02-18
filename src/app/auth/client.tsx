@@ -1,16 +1,15 @@
 'use client'
 
-import { Button, buttonVariants } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-
-import { authenticate, signInWithGoogle } from '@/actions/auth'
+import { authenticate } from '@/actions/auth'
 import { Fieldset } from '@/components/fieldset'
 import { Link } from '@/components/link'
 import { Logo } from '@/components/logo'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp'
-import { APP_NAME } from '@/utils/constants/brand'
+import { APP_DESCRIPTION, APP_NAME } from '@/utils/constants/brand'
 import { requiredField } from '@/utils/messages'
-import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { ChevronLeft } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
@@ -19,6 +18,7 @@ import { Controller, useForm } from 'react-hook-form'
 import slugify from 'slugify'
 import { toast } from 'sonner'
 import { useServerAction } from 'zsa-react'
+import { GoogleButton } from './google-button'
 
 type Props = {
   redirectTo?: string
@@ -29,12 +29,6 @@ export function AuthClient({ redirectTo }: Props) {
   const form = useForm({ defaultValues: { email: '', code: '', name: '', username: '' } })
   const [isWaitingTheCode, setIsWaitingTheCode] = useState(false)
   const [needRegister, setNeedRegister] = useState(false)
-
-  const googleAuthAction = useServerAction(signInWithGoogle, {
-    onSuccess: () => {
-      push('/dashboard')
-    },
-  })
 
   const action = useServerAction(authenticate, {
     onError: (error) => {
@@ -57,7 +51,7 @@ export function AuthClient({ redirectTo }: Props) {
   })
 
   return (
-    <div className='grid grid-rows-[max-content,auto,max-content] gap-4 min-h-screen'>
+    <div className='grid grid-rows-[max-content,auto,max-content] gap-4 min-h-screen bg-gradient-to-b from-background to-accent/20'>
       <header className='flex justify-between p-4 sticky top-0'>
         <Link href='/' className={buttonVariants({ variant: 'outline' })}>
           <ChevronLeft size={16} />
@@ -70,7 +64,10 @@ export function AuthClient({ redirectTo }: Props) {
         className='w-full h-full flex flex-col items-center justify-start md:justify-center py-20 md:py-0'
       >
         <main className='space-y-4'>
-          <h1 className='text-center font-semibold text-primary'>Welcome to {APP_NAME}</h1>
+          <div>
+            <h1 className='text-center font-semibold text-primary'>Welcome to {APP_NAME}</h1>
+            <p className='text-muted-foreground text-center'>{APP_DESCRIPTION}</p>
+          </div>
 
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -158,19 +155,13 @@ export function AuthClient({ redirectTo }: Props) {
           {process.env.GOOGLE_CLIENT_SECRET && (
             <>
               <div className='flex items-center justify-center gap-2 relative'>
-                <div className='absolute bg-foreground/20 h-[1px] w-full' />
-                <span className='relative z-10 bg-background px-2'>Or</span>
+                <div className='w-full h-[1px] bg-foreground/20' />
+                <span className='relative z-10 px-2'>Or</span>
+                <div className='w-full h-[1px] bg-foreground/20' />
               </div>
 
               <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_SECRET}>
-                <GoogleLogin
-                  onSuccess={(credentialResponse) =>
-                    googleAuthAction.execute({ googleJWT: credentialResponse.credential! })
-                  }
-                  onError={() => {
-                    toast.error('Failed to sign in with Google')
-                  }}
-                />
+                <GoogleButton />
               </GoogleOAuthProvider>
             </>
           )}
