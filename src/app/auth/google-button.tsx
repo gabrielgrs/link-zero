@@ -26,14 +26,16 @@ export function GoogleButton() {
   }
 
   return (
-    <GoogleLogin
-      onSuccess={(credentialResponse) => {
-        googleAuthAction.execute({ googleJWT: credentialResponse.credential! })
-        toast.success('Signed in with success! Redirecting you...')
-      }}
-      onError={() => {
-        toast.error('Login Failed')
-      }}
-    />
+    <div className='w-full mx-auto flex items-center justify-center'>
+      <GoogleLogin
+        onSuccess={(credentialResponse) => {
+          googleAuthAction.execute({ googleJWT: credentialResponse.credential! })
+          toast.success('Signed in with success! Redirecting you...')
+        }}
+        onError={() => {
+          toast.error('Login Failed')
+        }}
+      />
+    </div>
   )
 }
