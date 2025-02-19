@@ -6,11 +6,18 @@ import { UserSchema } from '@/libs/mongoose/schemas/user'
 import { uploadFile } from '@/libs/vercel/blob'
 import { parseData } from '@/utils/action'
 import { getDomain } from '@/utils/action/server'
-import { currencies } from '@/utils/constants/currencies'
+import { Currency, currencies } from '@/utils/constants/currencies'
+import { MIN_PRODUCT_PRICE } from '@/utils/constants/pricing'
+import { formatCurrency } from '@/utils/currency'
 import { z } from 'zod'
 import { createServerAction } from 'zsa'
 import { authProcedure } from './procedures'
-import { activeOrInactiveProductAndPrice, createProductAndPrice, updateProductAndPrice } from './stripe'
+import {
+  activeOrInactiveProductAndPrice,
+  createProductAndPrice,
+  getCurrencyPriceInCents,
+  updateProductAndPrice,
+} from './stripe'
 
 export const getProductBySlug = createServerAction()
   .input(z.object({ slug: z.string() }))
@@ -63,6 +70,22 @@ async function getContent(file: File | string) {
   }
 }
 
+async function isValidMinValue(value: number, currency: Currency) {
+  if (currency === 'usd')
+    return {
+      isValid: value >= MIN_PRODUCT_PRICE,
+      minPrice: formatCurrency(MIN_PRODUCT_PRICE, 'USD'),
+    }
+
+  const currencyQuotation = await getCurrencyPriceInCents('usd', currency)
+  const convertedMinValue = MIN_PRODUCT_PRICE * currencyQuotation
+
+  return {
+    isValid: value >= convertedMinValue,
+    minPrice: formatCurrency(convertedMinValue, currency.toUpperCase() as Uppercase<Currency>),
+  }
+}
+
 export const createProduct = authProcedure
   .input(
     z.object({
@@ -81,6 +104,9 @@ export const createProduct = authProcedure
     if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
 
     const content = await getContent(input.file[0] instanceof File ? input.file[0] : String(input))
+
+    const { isValid, minPrice } = await isValidMinValue(Number(input.price), input.currency)
+    if (!isValid) throw new Error(`Price must be at least ${minPrice}`)
 
     const product = await db.product.create({
       ...input,
@@ -120,6 +146,9 @@ export const updateProduct = authProcedure
   )
   .handler(async ({ ctx, input }) => {
     if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
+
+    const { isValid, minPrice } = await isValidMinValue(Number(input.price), input.currency)
+    if (!isValid) throw new Error(`Price must be at least ${minPrice}`)
 
     const { _id, ...rest } = input
 

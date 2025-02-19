@@ -5,7 +5,7 @@ import { UserSchema } from '@/libs/mongoose/schemas/user'
 import stripeClient from '@/libs/stripe'
 import { parseData } from '@/utils/action'
 import { getDomain } from '@/utils/action/server'
-import { currencies } from '@/utils/constants/currencies'
+import { Currency, currencies } from '@/utils/constants/currencies'
 import { PLATFORM_FEE } from '@/utils/constants/pricing'
 import { z } from 'zod'
 import { createOrFindUser } from './auth'
@@ -118,6 +118,20 @@ export const linkStripeAccountByCode = authProcedure
     return true
   })
 
+export async function getCurrencyPriceInCents(from: Currency, to: Currency) {
+  const fromTo = `${from.toUpperCase()}-${to.toUpperCase()}`
+  const url = `https://economia.awesomeapi.com.br/json/last/${fromTo}`
+
+  const response = await fetch(url, {
+    next: {
+      revalidate: 60 * 10, // 10 minutes
+    },
+  })
+  const json: Record<string, { high: string }> = await response.json()
+  const item = json[fromTo.replace('-', '')]
+  return Number(item.high.replace('.', '').slice(0, 3))
+}
+
 export const createCheckout = authProcedure
   .input(z.object({ productId: z.string(), email: z.string().nonempty() }))
   .handler(async ({ input }) => {
@@ -132,6 +146,10 @@ export const createCheckout = authProcedure
 
     if (!product.user.stripeAccountId) throw new Error('User is not connected to stripe')
 
+    const convertedCurrency = await getCurrencyPriceInCents('usd', product.currency)
+
+    const applicationFeeAmount = (PLATFORM_FEE * convertedCurrency) / 100
+
     const { url } = await stripeClient.checkout.sessions.create({
       payment_method_types: ['card'],
       client_reference_id: user._id.toString(),
@@ -145,7 +163,7 @@ export const createCheckout = authProcedure
         productId: product._id.toString(),
       },
       payment_intent_data: {
-        application_fee_amount: PLATFORM_FEE,
+        application_fee_amount: applicationFeeAmount,
         transfer_data: {
           destination: product.user.stripeAccountId,
         },

@@ -16,7 +16,8 @@ import { mimeTypes } from '@/libs/mongoose/schemas/product'
 import { categories } from '@/utils/categories'
 import { cn } from '@/utils/cn'
 import { Currency, currencies } from '@/utils/constants/currencies'
-import { requiredField } from '@/utils/messages'
+import { MIN_PRODUCT_PRICE } from '@/utils/constants/pricing'
+import { invalidValue, requiredField } from '@/utils/messages'
 import { ChevronDown, Trash } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Fragment } from 'react'
@@ -196,7 +197,11 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
           </Column>
 
           <Column size={3}>
-            <Fieldset label='Product price' error={formState.errors.price?.message}>
+            <Fieldset
+              label='Product price'
+              info='Use american format (1234.30)'
+              error={formState.errors.price?.message}
+            >
               <div className={cn('relative', isEdition && 'opacity-50 cursor-not-allowed pointer-events-none')}>
                 <Controller
                   control={control}
@@ -224,7 +229,21 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
                   }}
                 />
                 <Input
-                  {...register('price', { required: requiredField })}
+                  {...register('price', {
+                    required: requiredField,
+                    valueAsNumber: true,
+                    validate: (value) => {
+                      if (!/^(\d{1,3}(,\d{3})*|\d+)(\.\d{1,2})?$/.test(String(value))) {
+                        return invalidValue
+                      }
+                      if (value < MIN_PRODUCT_PRICE / 100) {
+                        return `The min price is ${MIN_PRODUCT_PRICE / 100} dollars`
+                      }
+                      return undefined
+                    },
+                  })}
+                  format={(value) => value.replace(/[^0-9.]/g, '').replace(/^(\d*\.?)|\./g, '$1')}
+                  type='text'
                   placeholder='Type the product price'
                   className='pl-16'
                 />
