@@ -51,7 +51,7 @@ export function AuthClient({ redirectTo }: Props) {
   })
 
   return (
-    <div className='grid grid-rows-[max-content,auto,max-content] gap-4 min-h-screen bg-gradient-to-b from-background to-accent/20 px-4'>
+    <div className='grid grid-rows-[max-content,auto,max-content] gap-4 min-h-screen px-4'>
       <header className='flex justify-between p-4 sticky top-0'>
         <Link href='/' className={buttonVariants({ variant: 'outline' })}>
           <ChevronLeft size={16} />

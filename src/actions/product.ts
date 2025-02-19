@@ -22,7 +22,10 @@ import {
 export const getProductBySlug = createServerAction()
   .input(z.object({ slug: z.string() }))
   .handler(async ({ input }) => {
-    const product = await db.product.findOne({ slug: input.slug }).populate<{ user: UserSchema }>('user').lean()
+    const product = await db.product
+      .findOne({ slug: input.slug, active: true })
+      .populate<{ user: UserSchema }>('user')
+      .lean()
 
     if (!product) throw new Error('Not found')
 
@@ -43,16 +46,22 @@ export const getProductBySlugWithContent = createServerAction()
     return parseData(product)
   })
 
-export const getUserProducts = authProcedure.handler(async ({ ctx }) => {
+export const getAuthUserProducts = authProcedure.handler(async ({ ctx }) => {
   const products = await db.product.find({ user: ctx.user._id }).populate<{ user: UserSchema }>('user').lean()
 
-  return parseData(products)
+  const productsWithSuccessfulSales = products.map((item) => ({
+    ...item,
+    sales: item.sales.filter((sale) => sale.status === 'success'),
+  }))
+  return parseData(productsWithSuccessfulSales)
 })
 
 export const getUserLibraryProducts = authProcedure.handler(async ({ ctx }) => {
-  const products = await db.product.find({ sales: { $in: [{ user: ctx.user._id }] } }).lean()
-
-  return parseData(products)
+  const productsBouthByUser = await db.product
+    .find({ sales: { $elemMatch: { user: ctx.user._id } } })
+    .populate<{ user: UserSchema }>('user')
+    .lean()
+  return parseData(productsBouthByUser)
 })
 
 async function getContent(file: File | string) {
@@ -96,7 +105,7 @@ export const createProduct = authProcedure
       file: z.union([z.array(z.instanceof(File)), z.string()]),
       name: z.string().nonempty(),
       currency: z.enum(currencies),
-      price: z.string().nonempty(),
+      price: z.number(),
       cover: z.string().nullable(),
     } as Record<keyof ProductSchema | 'file', any>),
   )
@@ -105,13 +114,12 @@ export const createProduct = authProcedure
 
     const content = await getContent(input.file[0] instanceof File ? input.file[0] : String(input))
 
-    const { isValid, minPrice } = await isValidMinValue(Number(input.price), input.currency)
+    const { isValid, minPrice } = await isValidMinValue(input.price, input.currency)
     if (!isValid) throw new Error(`Price must be at least ${minPrice}`)
 
     const product = await db.product.create({
       ...input,
       content,
-      price: Number(input.price),
       user: ctx.user._id,
     })
 

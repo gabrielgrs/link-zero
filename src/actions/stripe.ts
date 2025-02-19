@@ -119,6 +119,8 @@ export const linkStripeAccountByCode = authProcedure
   })
 
 export async function getCurrencyPriceInCents(from: Currency, to: Currency) {
+  if (from === to) return 1
+
   const fromTo = `${from.toUpperCase()}-${to.toUpperCase()}`
   const url = `https://economia.awesomeapi.com.br/json/last/${fromTo}`
 
@@ -127,6 +129,7 @@ export async function getCurrencyPriceInCents(from: Currency, to: Currency) {
       revalidate: 60 * 10, // 10 minutes
     },
   })
+
   const json: Record<string, { high: string }> = await response.json()
   const item = json[fromTo.replace('-', '')]
   return Number(item.high.replace('.', '').slice(0, 3))

@@ -1,10 +1,10 @@
 import { getUserLibraryProducts } from '@/actions/product'
 import { Column, Grid } from '@/components/grid'
-import { Button } from '@/components/ui/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+// import { Button } from '@/components/ui/button'
+// import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import dayjs from 'dayjs'
-import { EllipsisVertical } from 'lucide-react'
+// import { EllipsisVertical } from 'lucide-react'
 import { DownloadButton } from './download-button'
 import { PreviewLink } from './preview-link'
 
@@ -53,7 +53,7 @@ export default async function Page() {
 
                     <TableCell className='flex justify-end items-center gap-2'>
                       <DownloadButton productId={item._id} />
-                      <DropdownMenu>
+                      {/* <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant='outline' size='icon'>
                             <EllipsisVertical className='text-muted-foreground' size={16} />
@@ -63,7 +63,7 @@ export default async function Page() {
                           <DropdownMenuItem>Share</DropdownMenuItem>
                           <DropdownMenuItem>Download</DropdownMenuItem>
                         </DropdownMenuContent>
-                      </DropdownMenu>
+                      </DropdownMenu> */}
                     </TableCell>
                   </TableRow>
                 )

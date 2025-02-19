@@ -23,7 +23,7 @@ export function HomeClient({ products }: Props) {
 
   return (
     <>
-      <header className='flex justify-between px-4 border-b bg-background/90 backdrop-blur-lg z-50 h-16 items-center sticky top-0'>
+      <header className='flex justify-between px-4 border-foob backdrop-blur-lg z-50 h-16 items-center sticky top-0'>
         <Link href='/'>
           <Logo />
         </Link>

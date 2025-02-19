@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
   const token = request.nextUrl.searchParams.get('token')
 
   if (request.url.includes('/logout')) {
-    const response = NextResponse.redirect(new URL(redirectTo || '/', origin))
+    const response = NextResponse.redirect(new URL(redirectTo || '/auth', origin))
 
     response.cookies.delete('token')
     return response

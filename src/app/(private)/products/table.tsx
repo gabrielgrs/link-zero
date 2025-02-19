@@ -1,6 +1,6 @@
 'use client'
 
-import { activeOrInactiveProduct, getUserProducts } from '@/actions/product'
+import { activeOrInactiveProduct, getAuthUserProducts } from '@/actions/product'
 import { Column, Grid } from '@/components/grid'
 import { Link } from '@/components/link'
 import { Badge } from '@/components/ui/badge'
@@ -16,7 +16,7 @@ import { useServerAction } from 'zsa-react'
 import { PreviewLink } from './preview-link'
 
 type Props = {
-  products: ServerActionResponse<typeof getUserProducts>
+  products: ServerActionResponse<typeof getAuthUserProducts>
 }
 
 export function ProductsTable({ products: initialProducts }: Props) {

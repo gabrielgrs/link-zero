@@ -14,7 +14,7 @@ async function checkoutSessionUpdate(
 
   const product = await db.product.findOneAndUpdate(
     { _id: productId, 'sales.user': userId },
-    { $set: { 'sales.$': { status } } },
+    { $set: { 'sales.$.status': 'success' } },
     { new: true },
   )
 

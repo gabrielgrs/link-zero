@@ -26,6 +26,11 @@ import slugify from 'slugify'
 import { toast } from 'sonner'
 import { useServerAction } from 'zsa-react'
 
+function numberToCurrencyCents(value: number) {
+  const asString = String(value.toFixed(2))
+  const [integer, decimal] = asString.split('.')
+  return 100 * Number(integer) + Number(decimal)
+}
 const defaultValues = {
   _id: '',
   name: '',
@@ -70,7 +75,11 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
 
   return (
     <main>
-      <form onSubmit={handleSubmit((values) => action.execute(values))}>
+      <form
+        onSubmit={handleSubmit((values) =>
+          action.execute({ ...values, price: numberToCurrencyCents(Number(values.price)) }),
+        )}
+      >
         <Grid>
           <Column size={12}>
             <h1>{isEdition ? 'Edit' : 'Publish a new'} product</h1>
@@ -231,7 +240,6 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
                 <Input
                   {...register('price', {
                     required: requiredField,
-                    valueAsNumber: true,
                     validate: (value) => {
                       if (!/^(\d{1,3}(,\d{3})*|\d+)(\.\d{1,2})?$/.test(String(value))) {
                         return invalidValue
@@ -242,8 +250,7 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
                       return undefined
                     },
                   })}
-                  format={(value) => value.replace(/[^0-9.]/g, '').replace(/^(\d*\.?)|\./g, '$1')}
-                  type='text'
+                  type='number'
                   placeholder='Type the product price'
                   className='pl-16'
                 />
@@ -301,7 +308,7 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
             <Product
               name={name}
               currency={currency as Currency}
-              price={price}
+              price={numberToCurrencyCents(Number(price ?? 0))}
               cover={cover}
               user={user}
               description={description}

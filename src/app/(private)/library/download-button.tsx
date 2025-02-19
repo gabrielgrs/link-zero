@@ -17,11 +17,7 @@ export function DownloadButton({ productId }: { productId: string }) {
   })
 
   return (
-    <Button
-      loading={action.isPending}
-      disabled={action.isPending || action.isSuccess}
-      onClick={() => action.execute({ productId })}
-    >
+    <Button loading={action.isPending} onClick={() => action.execute({ productId })}>
       Download
     </Button>
   )

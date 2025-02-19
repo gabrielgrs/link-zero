@@ -15,7 +15,9 @@ const fontElement = Font({
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang='en'>
-      <body className={` ${fontElement.className} antialiased`}>
+      <body
+        className={` ${fontElement.className} antialiased bg-gradient-to-br from-background via-accent/10 to-background`}
+      >
         <NextTopLoader color='hsl(var(--foreground))' showSpinner={true} />
         <ClientLayout>{children}</ClientLayout>
       </body>
