@@ -13,6 +13,9 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
           <Logo />
         </Link>
         <nav className='flex gap-1 md:gap-4 items-center text-muted-foreground text-sm h-full'>
+          <Link href='/contact' className={cn(buttonVariants({ variant: 'ghost' }))}>
+            Contact
+          </Link>
           <Link href='/dashboard' className={cn(buttonVariants(), 'group')}>
             Dashboard <ArrowRight size={16} className='duration-500 group-hover:translate-x-2' />
           </Link>
