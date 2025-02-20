@@ -6,10 +6,21 @@ import { buttonVariants } from '@/components/ui/button'
 import { ServerActionResponse } from '@/utils/action'
 import { cn } from '@/utils/cn'
 import { formatCurrency } from '@/utils/currency'
+import { motion } from 'motion/react'
 
-export function ProductCard({ product }: { product: ServerActionResponse<typeof getProductsByCategory>[number] }) {
+export function ProductCard({
+  product,
+  index,
+}: { product: ServerActionResponse<typeof getProductsByCategory>[number]; index: number }) {
   return (
-    <div className='border shadow bg-background rounded-lg relative'>
+    <motion.div
+      layoutId={product._id}
+      key={product._id}
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: [10, 0] }}
+      transition={{ delay: index * 0.1, duration: 0.5 }}
+      className='border shadow bg-background rounded-lg relative'
+    >
       <div
         className={cn('h-32 bg-foreground/5 w-full rounded-t-lg')}
         style={{
@@ -31,6 +42,6 @@ export function ProductCard({ product }: { product: ServerActionResponse<typeof 
           Buy now for just {formatCurrency(product.price, product.currency)}
         </Link>
       </div>
-    </div>
+    </motion.div>
   )
 }
