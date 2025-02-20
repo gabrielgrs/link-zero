@@ -149,7 +149,7 @@ export const createCheckout = authProcedure
 
     if (!product.user.stripeAccountId) throw new Error('User is not connected to stripe')
 
-    const convertedCurrency = await getCurrencyPriceInCents('usd', product.currency)
+    const convertedCurrency = await getCurrencyPriceInCents('USD', product.currency)
 
     const applicationFeeAmount = (PLATFORM_FEE * convertedCurrency) / 100
 
@@ -159,7 +159,7 @@ export const createCheckout = authProcedure
       success_url: `${domain}/subscription?type=success`,
       cancel_url: `${domain}/subscription?type=failure`,
       mode: 'payment',
-      currency: product.currency,
+      currency: product.currency.toLowerCase(),
       line_items: [{ price: product.stripePriceId, quantity: 1 }],
       customer: user.stripeCustomerId,
       metadata: {

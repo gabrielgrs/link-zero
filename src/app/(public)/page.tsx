@@ -1,14 +1,16 @@
-import { getRandomProducts } from '@/actions/product'
+import { getLandingPageData } from '@/actions/shared'
 import { HomeClient } from './client'
 
-async function getProducts() {
-  const [products, err] = await getRandomProducts()
-  if (err) return []
-  return products
-}
+// async function getProducts() {
+//   const [products, err] = await getRandomProducts()
+//   if (err) return []
+//   return products
+// }
 
 export default async function Page() {
-  const products = await getProducts()
+  // const products = await getProducts()
+  const [data, err] = await getLandingPageData()
+  if (err) throw err
 
-  return <HomeClient products={products} />
+  return <HomeClient totalUsers={data.totalUsers} totalProducts={data.totalProducts} totalSales={data.totalSales} />
 }

@@ -15,6 +15,7 @@ type Props = Omit<
   viewAsCard?: boolean
   onSubmit?: () => void
   isSubmitting?: boolean
+  className?: string
 }
 
 export function Product({
@@ -30,9 +31,10 @@ export function Product({
   viewAsCard = false,
   onSubmit,
   isSubmitting,
+  className,
 }: Props) {
   return (
-    <div className='border shadow'>
+    <div className={cn('border shadow', className)}>
       <div
         className={cn('h-40 bg-foreground/5 w-full', viewAsCard && 'h-24')}
         style={{

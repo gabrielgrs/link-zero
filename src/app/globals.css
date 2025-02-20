@@ -36,7 +36,7 @@ body {
   }
 
   .dark {
-    --background: 0 0% 3.9%;
+    --background: 0 0% 0%;
     --foreground: 0 0% 98%;
     --card: 0 0% 3.9%;
     --card-foreground: 0 0% 98%;
@@ -49,7 +49,7 @@ body {
     --muted: 0 0% 14.9%;
     --muted-foreground: 0 0% 63.9%;
     --accent: 220 93% 73%;
-    --accent-foreground: 0 0% 98%;
+    --accent-foreground: 220 93% 20%;
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 14.9%;

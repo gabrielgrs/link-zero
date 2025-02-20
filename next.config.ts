@@ -18,6 +18,13 @@ const nextConfig: NextConfig = {
   env: {
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   },
+  images: {
+    remotePatterns: [
+      {
+        hostname: 'res.cloudinary.com',
+      },
+    ],
+  },
 }
 
 export default nextConfig

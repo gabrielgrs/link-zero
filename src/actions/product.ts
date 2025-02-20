@@ -80,13 +80,13 @@ async function getContent(file: File | string) {
 }
 
 async function isValidMinValue(value: number, currency: Currency) {
-  if (currency === 'usd')
+  if (currency === 'USD')
     return {
       isValid: value >= MIN_PRODUCT_PRICE,
       minPrice: formatCurrency(MIN_PRODUCT_PRICE, 'USD'),
     }
 
-  const currencyQuotation = await getCurrencyPriceInCents('usd', currency)
+  const currencyQuotation = await getCurrencyPriceInCents('USD', currency)
   const convertedMinValue = MIN_PRODUCT_PRICE * currencyQuotation
 
   return {
@@ -175,15 +175,19 @@ export const updateProduct = authProcedure
     return parseData(input)
   })
 
-export const getRandomProducts = createServerAction().handler(async () => {
-  const products = await db.product
-    .find({ url: { $ne: null }, active: true })
-    .populate<{ user: UserSchema }>('user')
-    .limit(9)
-    .lean()
+export const getProductsByCategory = createServerAction()
+  .input(z.object({ category: z.string().nonempty() }))
+  .handler(async ({ input }) => {
+    const products = await db.product
+      .find({ category: input.category, active: true })
+      // .find()
+      .populate<{ user: UserSchema }>('user')
+      .select('+content')
+      .limit(20)
+      .lean()
 
-  return parseData(products)
-})
+    return parseData(products.map((item) => ({ ...item, content: { url: '', format: item.content.format } })))
+  })
 
 export const generateDownloadUrl = createServerAction()
   .input(z.object({ productId: z.string() }))
