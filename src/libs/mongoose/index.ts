@@ -1,6 +1,5 @@
 import mongoose from 'mongoose'
 
-import { link } from './schemas/link'
 import { product } from './schemas/product'
 import { session } from './schemas/session'
 import { user } from './schemas/user'
@@ -18,6 +17,5 @@ connectDatabase()
 export const db = {
   user,
   product,
-  link,
   session,
 }

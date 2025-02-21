@@ -10,5 +10,8 @@ declare namespace NodeJS {
     STRIPE_WEBHOOK_SECRET: string
     STRIPE_CLIENT_ID: string
     GOOGLE_CLIENT_SECRET?: string
+    CLOUDFLARE_ACCOUNT_ID: string
+    CLOUDFLARE_ACCESS_KEY_ID: string
+    CLOUDFLARE_SECRET_ACCESS_KEY: string
   }
 }

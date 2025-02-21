@@ -46,10 +46,7 @@ export type ProductSchema = {
   currency: Currency
   price: number
   description: string
-  content: {
-    url: string
-    format: keyof typeof mimeTypes | 'custom'
-  }
+  storageKey: string
   user: Types.ObjectId
   details: { label: string; value: string }[]
   category: keyof typeof categories
@@ -111,18 +108,9 @@ export const product = createMongooseSchema<ProductSchema>(
         type: String,
         required: [true, 'Description is required'],
       },
-      content: {
-        type: {
-          url: {
-            type: String,
-            required: true,
-          },
-          format: {
-            type: String,
-            required: true,
-            enum: [...Object.keys(mimeTypes), 'custom'],
-          },
-        },
+      storageKey: {
+        type: String,
+        unique: true,
         required: true,
         select: false,
       },

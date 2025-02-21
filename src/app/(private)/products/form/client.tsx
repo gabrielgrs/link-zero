@@ -1,9 +1,8 @@
 'use client'
 
-import { createProduct, updateProduct } from '@/actions/product'
+import { createProduct, generateDownloadUrl, updateProduct } from '@/actions/product'
 import { Fieldset } from '@/components/fieldset'
 import { Column, Grid } from '@/components/grid'
-import { Link } from '@/components/link'
 import { Product } from '@/components/product'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -20,7 +19,6 @@ import { MIN_PRODUCT_PRICE } from '@/utils/constants/pricing'
 import { invalidValue, requiredField } from '@/utils/messages'
 import { ChevronDown, Trash } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { Fragment } from 'react'
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form'
 import slugify from 'slugify'
 import { toast } from 'sonner'
@@ -41,11 +39,13 @@ const defaultValues = {
   currency: Object.values(currencies)[0] as Currency,
   details: [] as { label: string; value: string }[],
   slug: '',
-  url: '',
   file: '',
 }
 
-export function ProductForm({ initialValues }: { initialValues?: typeof defaultValues }) {
+export function ProductForm({
+  initialValues,
+  storageKey,
+}: { storageKey?: string; initialValues?: typeof defaultValues }) {
   const isEdition = Boolean(initialValues?._id)
   const { push } = useRouter()
   const { control, register, formState, handleSubmit } = useForm({
@@ -73,6 +73,16 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
     },
   })
 
+  const generateDownloadUrlAction = useServerAction(generateDownloadUrl, {
+    onSuccess: ({ data }) => {
+      toast.success('Downloading file...')
+      window.open(data.url, '_blank')
+    },
+    onError: (error) => {
+      toast.error(error.err.message || 'Failed. Try again later.')
+    },
+  })
+
   return (
     <main>
       <form
@@ -85,6 +95,20 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
             <h1>{isEdition ? 'Edit' : 'Publish a new'} product</h1>
           </Column>
 
+          {isEdition && initialValues?._id && storageKey && (
+            <Column size={12}>
+              <Label>Content</Label>
+              <br />
+              <Button
+                variant='secondary'
+                loading={generateDownloadUrlAction.isPending}
+                onClick={() => generateDownloadUrlAction.execute({ productId: initialValues?._id })}
+              >
+                Download file
+              </Button>
+            </Column>
+          )}
+
           {!isEdition && (
             <>
               <Column size={12} className='px-8'>
@@ -96,7 +120,7 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
                 </p>
               </Column>
 
-              <Column size={12}>
+              <Column size={3}>
                 <Fieldset label='Content' error={formState.errors.file?.message} info='Max of 5mb'>
                   <Controller
                     control={control}
@@ -125,46 +149,9 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
             </>
           )}
 
-          {isEdition && initialValues?.url && (
-            <Column size={12}>
-              <Label>Content</Label>
-              <br />
-              <Link href={initialValues.url} target='_blank' className='text-sm text-muted-foreground'>
-                {initialValues?.url}
-              </Link>
-            </Column>
-          )}
-
-          <Column size={4}>
-            <Fieldset label='Category' error={formState.errors.category?.message}>
-              <Controller
-                control={control}
-                name='category'
-                render={({ field }) => {
-                  return (
-                    <Select onValueChange={(e) => field.onChange(e)} value={field.value}>
-                      <SelectTrigger className='w-full'>
-                        <SelectValue placeholder='Select' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(categories).map(([key, value]) => {
-                          return (
-                            <SelectItem key={key} value={key}>
-                              {value}
-                            </SelectItem>
-                          )
-                        })}
-                      </SelectContent>
-                    </Select>
-                  )
-                }}
-              />
-            </Fieldset>
-          </Column>
-
-          <Column size={8}>
-            <Fieldset label='Cover URL' error={formState.errors.cover?.message}>
-              <Input {...register('cover')} placeholder='Product Cover' />
+          <Column size={5}>
+            <Fieldset label='Name' error={formState.errors.name?.message}>
+              <Input {...register('name', { required: requiredField })} placeholder='Type the product name' />
             </Fieldset>
           </Column>
 
@@ -196,12 +183,6 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
                   )
                 }}
               />
-            </Fieldset>
-          </Column>
-
-          <Column size={5}>
-            <Fieldset label='Name' error={formState.errors.name?.message}>
-              <Input {...register('name', { required: requiredField })} placeholder='Type the product name' />
             </Fieldset>
           </Column>
 
@@ -258,6 +239,39 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
             </Fieldset>
           </Column>
 
+          <Column size={4}>
+            <Fieldset label='Category' error={formState.errors.category?.message}>
+              <Controller
+                control={control}
+                name='category'
+                render={({ field }) => {
+                  return (
+                    <Select onValueChange={(e) => field.onChange(e)} value={field.value}>
+                      <SelectTrigger className='w-full'>
+                        <SelectValue placeholder='Select' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(categories).map(([key, value]) => {
+                          return (
+                            <SelectItem key={key} value={key}>
+                              {value}
+                            </SelectItem>
+                          )
+                        })}
+                      </SelectContent>
+                    </Select>
+                  )
+                }}
+              />
+            </Fieldset>
+          </Column>
+
+          <Column size={4}>
+            <Fieldset label='Cover URL' error={formState.errors.cover?.message}>
+              <Input {...register('cover')} type='file' placeholder='Product Cover' />
+            </Fieldset>
+          </Column>
+
           <Column size={12}>
             <Fieldset label='Description' error={formState.errors.description?.message}>
               <Textarea {...register('description', { required: requiredField })} placeholder='Describe the product' />
@@ -267,26 +281,28 @@ export function ProductForm({ initialValues }: { initialValues?: typeof defaultV
           <Column size={12}>
             <Grid>
               <Column size={12}>
-                <Label>Characteristics</Label>
+                <Label>Details</Label>
               </Column>
 
               {detailsFieldArray.fields.map((f, index) => (
-                <Fragment key={f.id}>
-                  <Column size={2} className='flex items-center text-sm'>
-                    #{index + 1} Characteristic
-                  </Column>
-                  <Column size={4}>
-                    <Input {...register(`details.${index}.label`, { required: requiredField })} placeholder='Label' />
-                  </Column>
-                  <Column size={4}>
-                    <Input {...register(`details.${index}.value`, { required: requiredField })} placeholder='value' />
-                  </Column>
-                  <Column size={1}>
-                    <Button type='button' variant='destructive' onClick={() => detailsFieldArray.remove(index)}>
-                      <Trash />
-                    </Button>
-                  </Column>
-                </Fragment>
+                <Column
+                  key={f.id}
+                  size={6}
+                  className='bg-foreground/5 p-2 grid grid-cols-[auto,auto,max-content] gap-2 rounded-lg'
+                >
+                  <Label className='col-span-3'>#{index + 1} detail</Label>
+                  <Input {...register(`details.${index}.label`, { required: requiredField })} placeholder='Label' />
+                  <Input {...register(`details.${index}.value`, { required: requiredField })} placeholder='value' />
+
+                  <Button
+                    type='button'
+                    size='icon'
+                    variant='destructive'
+                    onClick={() => detailsFieldArray.remove(index)}
+                  >
+                    <Trash />
+                  </Button>
+                </Column>
               ))}
               <Column size={12} className='flex justify-center'>
                 <Button

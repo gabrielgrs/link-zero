@@ -8,7 +8,7 @@ type Props = {
 export default async function Page({ params }: Props) {
   const { slug } = await params
 
-  const [product, error] = await getProductBySlug({ slug })
+  const [product, error] = await getProductBySlug({ slug, active: true })
   if (error) throw error
 
   return <ProductClient product={product} />

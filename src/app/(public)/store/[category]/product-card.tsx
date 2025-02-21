@@ -30,9 +30,6 @@ export function ProductCard({
           backgroundSize: '100%',
         }}
       />
-      <p className='backdrop-blur-lg font-semibold px-1 rounded-sm border border-accent-foreground text-accent-foreground absolute top-1 right-1 text-sm w-max'>
-        {product.content.format}
-      </p>
       <div className='px-2 space-y-2 py-3'>
         <div>
           <p>{product.name}</p>

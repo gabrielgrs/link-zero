@@ -3,9 +3,8 @@
 import { db } from '@/libs/mongoose'
 import { ProductSchema } from '@/libs/mongoose/schemas/product'
 import { UserSchema } from '@/libs/mongoose/schemas/user'
-import { uploadFile } from '@/libs/vercel/blob'
+import { getFileUrl, uploadFile } from '@/libs/s3'
 import { parseData } from '@/utils/action'
-import { getDomain } from '@/utils/action/server'
 import { Currency, currencies } from '@/utils/constants/currencies'
 import { MIN_PRODUCT_PRICE } from '@/utils/constants/pricing'
 import { formatCurrency } from '@/utils/currency'
@@ -20,24 +19,10 @@ import {
 } from './stripe'
 
 export const getProductBySlug = createServerAction()
-  .input(z.object({ slug: z.string() }))
+  .input(z.object({ slug: z.string(), active: z.boolean().optional() }))
   .handler(async ({ input }) => {
     const product = await db.product
-      .findOne({ slug: input.slug, active: true })
-      .populate<{ user: UserSchema }>('user')
-      .lean()
-
-    if (!product) throw new Error('Not found')
-
-    return parseData(product)
-  })
-
-export const getProductBySlugWithContent = createServerAction()
-  .input(z.object({ slug: z.string() }))
-  .handler(async ({ input }) => {
-    const product = await db.product
-      .findOne({ slug: input.slug })
-      .select('+content')
+      .findOne(input.active ? { slug: input.slug, active: input.active } : { slug: input.slug })
       .populate<{ user: UserSchema }>('user')
       .lean()
 
@@ -64,21 +49,6 @@ export const getUserLibraryProducts = authProcedure.handler(async ({ ctx }) => {
   return parseData(productsBouthByUser)
 })
 
-async function getContent(file: File | string) {
-  if (file instanceof File) {
-    const uploadedFile = await uploadFile(file)
-    return {
-      url: uploadedFile.url,
-      format: file.type.split('/')[1],
-    }
-  }
-
-  return {
-    url: file,
-    format: 'custom',
-  }
-}
-
 async function isValidMinValue(value: number, currency: Currency) {
   if (currency === 'USD')
     return {
@@ -102,7 +72,7 @@ export const createProduct = authProcedure
       category: z.string().nonempty(),
       details: z.array(z.object({ label: z.string(), value: z.string() })),
       description: z.string().nonempty(),
-      file: z.union([z.array(z.instanceof(File)), z.string()]),
+      file: z.instanceof(File),
       name: z.string().nonempty(),
       currency: z.enum(currencies),
       price: z.number(),
@@ -112,14 +82,14 @@ export const createProduct = authProcedure
   .handler(async ({ ctx, input }) => {
     if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
 
-    const content = await getContent(input.file[0] instanceof File ? input.file[0] : String(input))
-
     const { isValid, minPrice } = await isValidMinValue(input.price, input.currency)
     if (!isValid) throw new Error(`Price must be at least ${minPrice}`)
 
+    const uploadedFile = await uploadFile(input.file[0])
+
     const product = await db.product.create({
       ...input,
-      content,
+      storageKey: uploadedFile.key,
       user: ctx.user._id,
     })
 
@@ -150,13 +120,10 @@ export const updateProduct = authProcedure
       description: z.string().nonempty(),
       name: z.string().nonempty(),
       cover: z.string().nullable(),
-    } as Record<keyof ProductSchema | 'file', any>),
+    }),
   )
   .handler(async ({ ctx, input }) => {
     if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
-
-    const { isValid, minPrice } = await isValidMinValue(Number(input.price), input.currency)
-    if (!isValid) throw new Error(`Price must be at least ${minPrice}`)
 
     const { _id, ...rest } = input
 
@@ -166,7 +133,7 @@ export const updateProduct = authProcedure
     const [, err] = await updateProductAndPrice({
       stripeProductId: product.stripeProductId!,
       stripePriceId: product.stripePriceId!,
-      cover: input.cover,
+      cover: input.cover ?? undefined,
       name: input.name,
       description: input.description,
     })
@@ -182,26 +149,26 @@ export const getProductsByCategory = createServerAction()
       .find({ category: input.category, active: true })
       // .find()
       .populate<{ user: UserSchema }>('user')
-      .select('+content')
       .limit(20)
       .lean()
 
-    return parseData(products.map((item) => ({ ...item, content: { url: '', format: item.content.format } })))
+    return parseData(products.map((item) => ({ ...item })))
   })
 
-export const generateDownloadUrl = createServerAction()
+export const generateDownloadUrl = authProcedure
   .input(z.object({ productId: z.string() }))
-  .onError(console.error)
-  .handler(async ({ input }) => {
-    const product = await db.product.findOne({ _id: input.productId }).select('+content').lean()
-    if (!product?.content) throw new Error('Product not found')
+  .handler(async ({ input, ctx }) => {
+    const product = await db.product
+      .findOne({
+        _id: input.productId,
+        $or: [{ user: ctx.user._id }, { sales: { $elemMatch: { user: ctx.user._id } } }],
+      })
+      .select('+productKey')
+      .lean()
+    if (!product?.storageKey) throw new Error('Product not found')
 
-    const link = await db.link.create({ product: product._id })
-    if (!link) throw new Error('Failed to create link')
-
-    const domain = await getDomain()
-
-    return { url: `${domain}/proxy-link?identifier=${link._id}` }
+    const url = await getFileUrl(product.storageKey)
+    return { url }
   })
 
 export const activeOrInactiveProduct = authProcedure
