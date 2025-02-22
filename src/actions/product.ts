@@ -3,7 +3,7 @@
 import { db } from '@/libs/mongoose'
 import { ProductSchema } from '@/libs/mongoose/schemas/product'
 import { UserSchema } from '@/libs/mongoose/schemas/user'
-import { uploadFile } from '@/libs/vercel/blob'
+import { removeFile, uploadFile } from '@/libs/vercel/blob'
 import { parseData } from '@/utils/action'
 import { getDomain } from '@/utils/action/server'
 import { Currency, currencies } from '@/utils/constants/currencies'
@@ -32,20 +32,6 @@ export const getProductBySlug = createServerAction()
     return parseData(product)
   })
 
-export const getProductBySlugWithContent = createServerAction()
-  .input(z.object({ slug: z.string() }))
-  .handler(async ({ input }) => {
-    const product = await db.product
-      .findOne({ slug: input.slug })
-      .select('+content')
-      .populate<{ user: UserSchema }>('user')
-      .lean()
-
-    if (!product) throw new Error('Not found')
-
-    return parseData(product)
-  })
-
 export const getAuthUserProducts = authProcedure.handler(async ({ ctx }) => {
   const products = await db.product.find({ user: ctx.user._id }).populate<{ user: UserSchema }>('user').lean()
 
@@ -64,18 +50,11 @@ export const getUserLibraryProducts = authProcedure.handler(async ({ ctx }) => {
   return parseData(productsBouthByUser)
 })
 
-async function getContent(file: File | string) {
-  if (file instanceof File) {
-    const uploadedFile = await uploadFile(file)
-    return {
-      url: uploadedFile.url,
-      format: file.type.split('/')[1],
-    }
-  }
-
+async function getContent(file: File) {
+  const uploadedFile = await uploadFile(file)
   return {
-    url: file,
-    format: 'custom',
+    url: uploadedFile.url,
+    format: file.type.split('/')[1],
   }
 }
 
@@ -91,7 +70,7 @@ async function isValidMinValue(value: number, currency: Currency) {
 
   return {
     isValid: value >= convertedMinValue,
-    minPrice: formatCurrency(convertedMinValue, currency.toUpperCase() as Uppercase<Currency>),
+    minPrice: formatCurrency(convertedMinValue / 100, currency.toUpperCase() as Uppercase<Currency>),
   }
 }
 
@@ -102,23 +81,25 @@ export const createProduct = authProcedure
       category: z.string().nonempty(),
       details: z.array(z.object({ label: z.string(), value: z.string() })),
       description: z.string().nonempty(),
-      file: z.union([z.array(z.instanceof(File)), z.string()]),
+      file: z.instanceof(File),
       name: z.string().nonempty(),
       currency: z.enum(currencies),
       price: z.number(),
-      cover: z.string().nullable(),
+      // cover: z.instanceof(File).optional(),
     } as Record<keyof ProductSchema | 'file', any>),
   )
   .handler(async ({ ctx, input }) => {
     if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
 
-    const content = await getContent(input.file[0] instanceof File ? input.file[0] : String(input))
+    const content = await getContent(input.file[0])
+    const cover = input.cover ? await uploadFile(input.cover[0]).then((res) => res.url) : null
 
     const { isValid, minPrice } = await isValidMinValue(input.price, input.currency)
-    if (!isValid) throw new Error(`Price must be at least ${minPrice}`)
+    if (!isValid) throw new Error(`Price must be at least ${minPrice} (${formatCurrency(MIN_PRODUCT_PRICE, 'USD')})`)
 
     const product = await db.product.create({
       ...input,
+      cover,
       content,
       user: ctx.user._id,
     })
@@ -149,28 +130,30 @@ export const updateProduct = authProcedure
       details: z.array(z.object({ label: z.string(), value: z.string() })),
       description: z.string().nonempty(),
       name: z.string().nonempty(),
-      cover: z.string().nullable(),
-    } as Record<keyof ProductSchema | 'file', any>),
+      cover: z.union([z.string(), z.instanceof(File)]).optional(),
+      coverToRemove: z.string().optional(),
+    }),
   )
   .handler(async ({ ctx, input }) => {
     if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
 
-    const { isValid, minPrice } = await isValidMinValue(Number(input.price), input.currency)
-    if (!isValid) throw new Error(`Price must be at least ${minPrice}`)
-
     const { _id, ...rest } = input
 
-    const product = await db.product.findOneAndUpdate({ _id, user: ctx.user._id }, { ...rest }).lean()
+    const newCover = input.cover instanceof File ? await uploadFile(input.cover).then((res) => res.url) : input.cover
+
+    const product = await db.product.findOneAndUpdate({ _id, user: ctx.user._id, cover: newCover }, { ...rest })
     if (!product) throw new Error('Not found')
 
     const [, err] = await updateProductAndPrice({
       stripeProductId: product.stripeProductId!,
       stripePriceId: product.stripePriceId!,
-      cover: input.cover,
       name: input.name,
       description: input.description,
+      cover: newCover,
     })
     if (err) throw err
+
+    if (input.coverToRemove) await removeFile(input.coverToRemove)
 
     return parseData(input)
   })

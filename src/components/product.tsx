@@ -73,8 +73,8 @@ export function Product({
                 </li>
               )}
               {!viewAsCard &&
-                details.map(({ label, value }) => (
-                  <li key={`${label}_${value}`} className='flex justify-between items-center'>
+                details.map(({ label, value }, index) => (
+                  <li key={`${label}_${value}_${index}`} className='flex justify-between items-center'>
                     <strong>{label}</strong> {value}
                   </li>
                 ))}

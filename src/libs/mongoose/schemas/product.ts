@@ -16,7 +16,7 @@ export const mimeTypes = {
   pdf: 'application/pdf',
   txt: 'text/plain',
   csv: 'text/csv',
-  json: 'application/json',
+  // json: 'application/json',
   doc: 'application/msword',
   // docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   xls: 'application/vnd.ms-excel',

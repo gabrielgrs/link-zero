@@ -2,7 +2,15 @@
 
 import { db } from '@/libs/mongoose'
 import { UserSchema } from '@/libs/mongoose/schemas/user'
-import stripeClient from '@/libs/stripe'
+import {
+  createCheckoutSession,
+  createPrice,
+  createProduct,
+  decodeOAuthToken,
+  getOAuthLink,
+  updatePrice,
+  updateProduct,
+} from '@/libs/stripe/utils'
 import { parseData } from '@/utils/action'
 import { getDomain } from '@/utils/action/server'
 import { Currency, currencies } from '@/utils/constants/currencies'
@@ -22,17 +30,16 @@ export const createProductAndPrice = authProcedure
     }),
   )
   .handler(async ({ input }) => {
-    const createdProduct = await stripeClient.products.create({
+    const createdProduct = await createProduct({
       name: input.name,
       description: input.description,
-      images: input.cover ? [input.cover] : [],
+      images: input.cover,
     })
 
-    const createdPrice = await stripeClient.prices.create({
+    const createdPrice = await createPrice(createdProduct.id, {
       currency: input.currency,
       nickname: input.name,
-      unit_amount: input.price,
-      product: createdProduct.id,
+      unitAmount: input.price,
     })
 
     return {
@@ -52,13 +59,13 @@ export const updateProductAndPrice = authProcedure
     }),
   )
   .handler(async ({ input }) => {
-    await stripeClient.products.update(input.stripeProductId, {
+    await updateProduct(input.stripeProductId, {
       name: input.name,
       description: input.description,
-      images: input.cover ? [input.cover] : [],
+      image: input.cover,
     })
 
-    await stripeClient.prices.update(input.stripePriceId, {
+    await updatePrice(input.stripePriceId, {
       nickname: input.name,
     })
   })
@@ -73,11 +80,11 @@ export const activeOrInactiveProductAndPrice = authProcedure
   )
   .handler(async ({ input }) => {
     try {
-      await stripeClient.products.update(input.stripeProductId, {
+      await updateProduct(input.stripeProductId, {
         active: input.active,
       })
 
-      await stripeClient.prices.update(input.stripePriceId, {
+      await updatePrice(input.stripePriceId, {
         active: input.active,
       })
 
@@ -89,26 +96,15 @@ export const activeOrInactiveProductAndPrice = authProcedure
 
 export const linkAccount = authProcedure.handler(async () => {
   const domain = await getDomain()
+  const url = await getOAuthLink(`${domain}/api/stripe/oauth/callback`)
 
-  const response = await stripeClient.oauth.authorizeUrl({
-    response_type: 'code',
-    client_id: process.env.STRIPE_CLIENT_ID,
-    scope: 'read_write',
-    redirect_uri: `${domain}/api/stripe/oauth/callback`,
-  })
-
-  return parseData({
-    url: response,
-  })
+  return parseData({ url })
 })
 
 export const linkStripeAccountByCode = authProcedure
   .input(z.object({ code: z.string().nonempty() }))
   .handler(async ({ input, ctx }) => {
-    const response = await stripeClient.oauth.token({
-      grant_type: 'authorization_code',
-      code: input.code,
-    })
+    const response = await decodeOAuthToken(input.code)
 
     await db.user.findOneAndUpdate(
       { _id: ctx.user._id, stripeAccountId: null },
@@ -132,7 +128,7 @@ export async function getCurrencyPriceInCents(from: Currency, to: Currency) {
 
   const json: Record<string, { high: string }> = await response.json()
   const item = json[fromTo.replace('-', '')]
-  return Number(item.high.replace('.', '').slice(0, 3))
+  return Number(item.high.replace('.', '').slice(0, 3)) / 100
 }
 
 export const createCheckout = authProcedure
@@ -153,24 +149,18 @@ export const createCheckout = authProcedure
 
     const applicationFeeAmount = (PLATFORM_FEE * convertedCurrency) / 100
 
-    const { url } = await stripeClient.checkout.sessions.create({
-      payment_method_types: ['card'],
-      client_reference_id: user._id.toString(),
-      success_url: `${domain}/subscription?type=success`,
-      cancel_url: `${domain}/subscription?type=failure`,
-      mode: 'payment',
-      currency: product.currency.toLowerCase(),
-      line_items: [{ price: product.stripePriceId, quantity: 1 }],
-      customer: user.stripeCustomerId,
-      metadata: {
-        productId: product._id.toString(),
-      },
-      payment_intent_data: {
-        application_fee_amount: applicationFeeAmount,
-        transfer_data: {
-          destination: product.user.stripeAccountId,
-        },
-      },
+    if (!product.stripePriceId || !product.stripeProductId) throw new Error('Failed to process your request')
+
+    const { url } = await createCheckoutSession({
+      userId: user._id.toString(),
+      customerId: user.stripeCustomerId,
+      applicationFeeAmount,
+      currency: product.currency,
+      destinationAccountId: product.user.stripeAccountId,
+      productId: product._id.toString(),
+      priceId: product.stripePriceId,
+      successUrl: `${domain}/subscription?type=success`,
+      cancelUrl: `${domain}/subscription?type=failure`,
     })
 
     if (!url) throw new Error('Failed to process your request')

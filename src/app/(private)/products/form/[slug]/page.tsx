@@ -1,4 +1,4 @@
-import { getProductBySlugWithContent } from '@/actions/product'
+import { getProductBySlug } from '@/actions/product'
 import { ProductForm } from '../client'
 
 type Props = {
@@ -6,7 +6,7 @@ type Props = {
 }
 export default async function Page({ params }: Props) {
   const { slug } = await params
-  const [product, err] = await getProductBySlugWithContent({ slug })
+  const [product, err] = await getProductBySlug({ slug })
   if (err) throw err
 
   return (
@@ -21,7 +21,6 @@ export default async function Page({ params }: Props) {
         price: product.price,
         slug: product.slug,
         details: product.details,
-        url: product.content.url,
         file: '',
       }}
     />
