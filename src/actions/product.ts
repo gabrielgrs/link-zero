@@ -79,7 +79,6 @@ export const createProduct = authProcedure
     z.object({
       slug: z.string().nonempty(),
       category: z.string().nonempty(),
-      details: z.array(z.object({ label: z.string(), value: z.string() })),
       description: z.string().nonempty(),
       file: z.instanceof(File),
       name: z.string().nonempty(),
@@ -127,7 +126,6 @@ export const updateProduct = authProcedure
       _id: z.string().nonempty(),
       slug: z.string().nonempty(),
       category: z.string().nonempty(),
-      details: z.array(z.object({ label: z.string(), value: z.string() })),
       description: z.string().nonempty(),
       name: z.string().nonempty(),
       cover: z.union([z.string(), z.instanceof(File)]).optional(),

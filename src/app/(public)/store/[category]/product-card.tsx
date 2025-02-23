@@ -8,10 +8,19 @@ import { cn } from '@/utils/cn'
 import { formatCurrency } from '@/utils/currency'
 import { motion } from 'motion/react'
 
-export function ProductCard({
-  product,
-  index,
-}: { product: ServerActionResponse<typeof getProductsByCategory>[number]; index: number }) {
+type Props = {
+  product: Pick<
+    ServerActionResponse<typeof getProductsByCategory>[number],
+    '_id' | 'name' | 'cover' | 'slug' | 'price' | 'currency'
+  >
+  user: {
+    username: string
+    name: string
+  }
+  index: number
+}
+
+export function ProductCard({ product, user, index }: Props) {
   return (
     <motion.div
       layoutId={product._id}
@@ -30,13 +39,11 @@ export function ProductCard({
           backgroundSize: '100%',
         }}
       />
-      <p className='backdrop-blur-lg font-semibold px-1 rounded-sm border border-accent-foreground text-accent-foreground absolute top-1 right-1 text-sm w-max'>
-        {product.content.format}
-      </p>
+
       <div className='px-2 space-y-2 py-3'>
         <div>
           <p>{product.name}</p>
-          <Link href={`/user/${product.user.username}`}>{product.user.name}</Link>
+          <Link href={`/user/${user.username}`}>{user.name}</Link>
         </div>
         <Link href={`/product/${product.slug}`} className={buttonVariants()}>
           Buy now for just {formatCurrency(product.price, product.currency)}

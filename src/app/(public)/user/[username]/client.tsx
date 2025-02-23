@@ -1,9 +1,9 @@
 import { getUserByUsername } from '@/actions/auth'
 import { getProductsByUser } from '@/actions/product'
+import { ProductCard } from '@/app/(public)/store/[category]/product-card'
 import { Column, Grid } from '@/components/grid'
 import { Link } from '@/components/link'
 import { Logo } from '@/components/logo'
-import { Product } from '@/components/product'
 import { ServerActionResponse } from '@/utils/action'
 
 type Props = {
@@ -14,12 +14,7 @@ type Props = {
 export function UserClient({ user, products }: Props) {
   return (
     <div>
-      <header className='flex border-b items-center justify-between px-8 h-16 sticky-top'>
-        <Link href='/'>
-          <Logo />
-        </Link>
-        <p>{user.name}</p>
-      </header>
+      <h1 className='text-muted-foreground text-center'>{user.name}'s profile</h1>
       <main>
         <Grid>
           {user.bio && (
@@ -31,8 +26,20 @@ export function UserClient({ user, products }: Props) {
             <section>
               <h1>Created products</h1>
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                {products.map((product) => (
-                  <Product key={product._id} {...product} user={user} viewAsCard />
+                {products.map((product, index) => (
+                  <ProductCard
+                    key={product._id}
+                    product={{
+                      _id: product._id,
+                      currency: product.currency,
+                      cover: product.cover,
+                      price: product.price,
+                      name: product.name,
+                      slug: product.slug,
+                    }}
+                    user={{ username: user.username, name: user.name! }}
+                    index={index}
+                  />
                 ))}
               </div>
             </section>

@@ -3,23 +3,21 @@
 import { createProduct, generateDownloadUrl, updateProduct } from '@/actions/product'
 import { Fieldset } from '@/components/fieldset'
 import { Column, Grid } from '@/components/grid'
-import { Product } from '@/components/product'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { useAuth } from '@/hooks/use-auth'
 import { mimeTypes } from '@/libs/mongoose/schemas/product'
 import { categories } from '@/utils/categories'
 import { cn } from '@/utils/cn'
 import { Currency, currencies } from '@/utils/constants/currencies'
 import { MIN_PRODUCT_PRICE } from '@/utils/constants/pricing'
 import { invalidValue, requiredField } from '@/utils/messages'
-import { ChevronDown, Trash } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import slugify from 'slugify'
 import { toast } from 'sonner'
 import { useServerAction } from 'zsa-react'
@@ -37,7 +35,6 @@ const defaultValues = {
   price: 0,
   category: '',
   currency: Object.values(currencies)[0] as Currency,
-  details: [] as { label: string; value: string }[],
   slug: '',
   file: '',
 }
@@ -45,20 +42,9 @@ const defaultValues = {
 export function ProductForm({ initialValues }: { storageKey?: string; initialValues?: typeof defaultValues }) {
   const isEdition = Boolean(initialValues?._id)
   const { push } = useRouter()
-  const { control, register, formState, handleSubmit } = useForm({
+  const { control, register, formState, handleSubmit, getValues } = useForm({
     defaultValues: initialValues ? { ...defaultValues, ...initialValues } : defaultValues,
   })
-  const name = useWatch({ control, name: 'name' })
-  const price = useWatch({ control, name: 'price' })
-  const currency = useWatch({ control, name: 'currency' })
-  const cover = useWatch({ control, name: 'cover' })
-  const category = useWatch({ control, name: 'category' })
-  const description = useWatch({ control, name: 'description' })
-  const slug = useWatch({ control, name: 'slug' })
-  const details = useWatch({ control, name: 'details' })
-  const detailsFieldArray = useFieldArray({ control, name: 'details' })
-
-  const { user } = useAuth()
 
   const action = useServerAction(isEdition ? updateProduct : createProduct, {
     onSuccess: () => {
@@ -89,7 +75,7 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
       >
         <Grid>
           <Column size={12}>
-            <h1>{isEdition ? 'Edit' : 'Publish a new'} product</h1>
+            <h1>{isEdition ? 'Update' : 'New'} product</h1>
           </Column>
 
           {isEdition && initialValues?._id && (
@@ -108,16 +94,7 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
 
           {!isEdition && (
             <>
-              <Column size={12} className='px-8'>
-                <p className={cn('text-xs text-muted-foreground')}>
-                  Aceppted formats:{' '}
-                  {Object.values(mimeTypes)
-                    .map((item) => item.split('/')[1])
-                    .join(', ')}
-                </p>
-              </Column>
-
-              <Column size={3}>
+              <Column size={4}>
                 <Fieldset label='Content' error={formState.errors.file?.message} info='Max of 5mb'>
                   <Controller
                     control={control}
@@ -142,6 +119,12 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
                     }}
                   />
                 </Fieldset>
+              </Column>
+
+              <Column size={8} className='flex items-center h-full'>
+                <p className={cn('text-xs text-muted-foreground')}>
+                  Aceppted formats: {Object.keys(mimeTypes).join(', ')}
+                </p>
               </Column>
             </>
           )}
@@ -198,7 +181,7 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button className='absolute text-xs left-1 bg-foreground/10 h-8 w-12 flex gap-1 items-center justify-center top-[50%] translate-y-[-50%]'>
-                            {currency.toUpperCase()}
+                            {field.value.toUpperCase()}
                             <ChevronDown size={12} />
                           </button>
                         </DropdownMenuTrigger>
@@ -275,68 +258,24 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
             </Fieldset>
           </Column>
 
-          <Column size={12}>
-            <Grid>
-              <Column size={12}>
-                <Label>Details</Label>
-              </Column>
-
-              {detailsFieldArray.fields.map((f, index) => (
-                <Column
-                  key={f.id}
-                  size={6}
-                  className='bg-foreground/5 p-2 grid grid-cols-[auto,auto,max-content] gap-2 rounded-lg'
-                >
-                  <Label className='col-span-3'>#{index + 1} detail</Label>
-                  <Input {...register(`details.${index}.label`, { required: requiredField })} placeholder='Label' />
-                  <Input {...register(`details.${index}.value`, { required: requiredField })} placeholder='value' />
-
-                  <Button
-                    type='button'
-                    size='icon'
-                    variant='destructive'
-                    onClick={() => detailsFieldArray.remove(index)}
-                  >
-                    <Trash />
-                  </Button>
-                </Column>
-              ))}
-              <Column size={12} className='flex justify-center'>
-                <Button
-                  type='button'
-                  variant='outline'
-                  onClick={() => detailsFieldArray.append({ label: '', value: '' })}
-                >
-                  Add detail
-                </Button>
-              </Column>
-            </Grid>
-          </Column>
-
-          <Column size={12} className='mt-10'>
-            <h2>Preview</h2>
-          </Column>
-
-          <Column size={12}>
-            <Product
-              name={name}
-              currency={currency as Currency}
-              price={numberToCurrencyCents(Number(price ?? 0))}
-              cover={cover}
-              user={user}
-              description={description}
-              details={details}
-              category={category as keyof typeof categories}
-              slug={slug}
-            />
-          </Column>
-
           <Column
             size={12}
             className='flex justify-end gap-2 items-center sticky bottom-2 backdrop-blur-sm z-20 py-4 my-8'
           >
-            <Button type='reset' variant='outline'>
-              Cancel
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => {
+                const searchParams = new URLSearchParams()
+                const values = getValues()
+
+                Object.entries(values).forEach(([key, value]) => {
+                  searchParams.set(key, String(value))
+                })
+                window.open(`/product/preview?${searchParams.toString()}`, '_blank')
+              }}
+            >
+              Preview
             </Button>
 
             <Button type='submit' loading={action.isPending || action.isSuccess}>

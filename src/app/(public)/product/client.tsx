@@ -13,9 +13,10 @@ import { useServerAction } from 'zsa-react'
 
 type Props = {
   product: ServerActionResponse<typeof getProductBySlug>
+  isPreview?: boolean
 }
 
-export function ProductClient({ product }: Props) {
+export function ProductClient({ product, isPreview = false }: Props) {
   const { push } = useRouter()
   const { user } = useAuth()
   const action = useServerAction(createCheckout, {
@@ -38,6 +39,7 @@ export function ProductClient({ product }: Props) {
             if (user) return action.execute({ email: user.email, productId: product._id })
             return push(`/auth?redirectTo=/product/${product.slug}`)
           }}
+          isPreview={isPreview}
         />
       </main>
       <footer className='flex justify-center items-center gap-2 text-muted-foreground py-4'>

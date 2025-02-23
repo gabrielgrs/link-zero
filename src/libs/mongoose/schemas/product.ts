@@ -51,7 +51,6 @@ export type ProductSchema = {
     format: keyof typeof mimeTypes | 'custom'
   }
   user: Types.ObjectId
-  details: { label: string; value: string }[]
   category: keyof typeof categories
   active: boolean
   stripeProductId?: string
@@ -135,10 +134,7 @@ export const product = createMongooseSchema<ProductSchema>(
         ref: 'User',
         required: [true, 'User is required'],
       },
-      details: {
-        type: [{ label: String, value: String }],
-        required: [true, 'Details are required'],
-      },
+
       category: {
         type: String,
         enum: Object.keys(categories),

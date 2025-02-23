@@ -1,5 +1,5 @@
 import { getProductBySlug } from '@/actions/product'
-import { ProductClient } from './client'
+import { ProductClient } from '../client'
 
 type Props = {
   params: Promise<{ slug: string }>
