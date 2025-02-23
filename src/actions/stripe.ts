@@ -15,6 +15,7 @@ import { parseData } from '@/utils/action'
 import { getDomain } from '@/utils/action/server'
 import { currencies } from '@/utils/constants/currencies'
 import { PLATFORM_FEE } from '@/utils/constants/pricing'
+import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { createOrFindUser } from './auth'
 import { authProcedure } from './procedures'
@@ -96,7 +97,7 @@ export const activeOrInactiveProductAndPrice = authProcedure
 
 export const linkAccount = authProcedure.handler(async () => {
   const domain = await getDomain()
-  const url = await getOAuthLink(`${domain}/api/stripe/oauth/callback`)
+  const url = await getOAuthLink(`${domain}/settings`)
 
   return parseData({ url })
 })
@@ -104,6 +105,8 @@ export const linkAccount = authProcedure.handler(async () => {
 export const linkStripeAccountByCode = authProcedure
   .input(z.object({ code: z.string().nonempty() }))
   .handler(async ({ input, ctx }) => {
+    if (ctx.user.stripeAccountId) return redirect('/settings')
+
     const response = await decodeOAuthToken(input.code)
 
     await db.user.findOneAndUpdate(

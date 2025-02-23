@@ -1,6 +1,7 @@
 'use client'
 
 import { getUserByUsername, updateUser } from '@/actions/auth'
+import { linkAccount } from '@/actions/stripe'
 import { Fieldset } from '@/components/fieldset'
 import { Column, Grid } from '@/components/grid'
 import { Button } from '@/components/ui/button'
@@ -8,12 +9,20 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ServerActionResponse } from '@/utils/action'
 import { requiredField } from '@/utils/messages'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { useServerAction } from 'zsa-react'
 
 export function SettingsClient({ user }: { user: ServerActionResponse<typeof getUserByUsername> }) {
   const { register, handleSubmit, formState, reset } = useForm({ defaultValues: user })
+  const { push } = useRouter()
+
+  const linkAccountAction = useServerAction(linkAccount, {
+    onSuccess: ({ data }) => {
+      push(data.url)
+    },
+  })
 
   const updateUserAction = useServerAction(updateUser, {
     onSuccess: () => {
@@ -25,7 +34,7 @@ export function SettingsClient({ user }: { user: ServerActionResponse<typeof get
   })
 
   return (
-    <main>
+    <main className='space-y-4'>
       <form
         onSubmit={handleSubmit((values) =>
           updateUserAction.execute({
@@ -74,6 +83,17 @@ export function SettingsClient({ user }: { user: ServerActionResponse<typeof get
           </Column>
         </Grid>
       </form>
+
+      {!user.stripeAccountId && (
+        <Column size={12}>
+          <Button
+            onClick={() => linkAccountAction.execute()}
+            loading={linkAccountAction.isPending || linkAccountAction.isSuccess}
+          >
+            Connect your account to Stripe to start receiving payments
+          </Button>
+        </Column>
+      )}
     </main>
   )
 }

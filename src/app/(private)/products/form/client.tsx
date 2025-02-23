@@ -216,11 +216,12 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
             <Fieldset label='Category' error={formState.errors.category?.message}>
               <Controller
                 control={control}
+                rules={{ required: requiredField }}
                 name='category'
                 render={({ field }) => {
                   return (
                     <Select onValueChange={(e) => field.onChange(e)} value={field.value}>
-                      <SelectTrigger className='w-full'>
+                      <SelectTrigger hasValue={Boolean(field.value)} className={cn('w-full')}>
                         <SelectValue placeholder='Select' />
                       </SelectTrigger>
                       <SelectContent>
@@ -247,7 +248,7 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
 
           <Column size={12}>
             <Fieldset label='Description' error={formState.errors.description?.message}>
-              <Textarea {...register('description')} placeholder='Describe the product' />
+              <Textarea {...register('description', { required: requiredField })} placeholder='Describe the product' />
             </Fieldset>
           </Column>
 

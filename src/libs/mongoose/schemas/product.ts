@@ -48,7 +48,7 @@ export type ProductSchema = {
   cover?: string
   currency: Currency
   price: number
-  description?: string
+  description: string
   content: {
     url: string
     format: keyof typeof mimeTypes | 'custom'
