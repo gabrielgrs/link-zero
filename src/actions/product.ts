@@ -151,38 +151,38 @@ export const generateDownloadUrl = createServerAction()
     return { url: `${domain}/proxy-link?identifier=${link._id}` }
   })
 
-export const publishProduct = authProcedure
-  .input(z.object({ productId: z.string() }))
-  .handler(async ({ ctx, input }) => {
-    const product = await db.product.findOne({ _id: input.productId, user: ctx.user._id }).lean()
-    if (!product) throw new Error('Not found')
-
-    const [res, err] = await createProductAndPrice({
-      cover: product.cover,
-      currency: product.currency,
-      name: product.name,
-      description: product.description,
-      price: product.price,
-    })
-    if (err) throw err
-
-    await db.product.findOneAndUpdate(
-      { _id: input.productId },
-      { stripeProductId: res.productId, stripePriceId: res.priceId },
-    )
-
-    return true
-  })
-
 export const updateProductStatus = authProcedure
   .input(z.object({ productId: z.string(), status: z.enum(productStatus) }))
   .handler(async ({ input, ctx }) => {
-    const success = await activeOrInactiveProductAndPrice({
-      stripeProductId: input.productId,
-      stripePriceId: input.productId,
-      active: input.status === 'PUBLISHED',
-    })
-    if (!success) throw new Error('Failed to process your request')
+    if (input.status === 'PUBLISHED') {
+      const product = await db.product.findOne({ _id: input.productId, user: ctx.user._id }).lean()
+      if (!product) throw new Error('Not found')
+
+      if (!product.stripePriceId && !product.stripeProductId) {
+        const [res, err] = await createProductAndPrice({
+          cover: product.cover,
+          currency: product.currency,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+        })
+        if (err) throw err
+
+        await db.product.findOneAndUpdate(
+          { _id: input.productId },
+          { stripeProductId: res.productId, stripePriceId: res.priceId, status: 'PUBLISHED' },
+        )
+
+        return parseData(input)
+      }
+    } else {
+      const success = await activeOrInactiveProductAndPrice({
+        stripeProductId: input.productId,
+        stripePriceId: input.productId,
+        active: true,
+      })
+      if (!success) throw new Error('Failed to process your request')
+    }
 
     const product = await db.product.findOneAndUpdate(
       { _id: input.productId, user: ctx.user._id },
