@@ -1,6 +1,6 @@
 'use client'
 
-import { activeOrInactiveProduct, getAuthUserProducts } from '@/actions/product'
+import { getAuthUserProducts, updateProductStatus } from '@/actions/product'
 import { Column, Grid } from '@/components/grid'
 import { Link } from '@/components/link'
 import { Badge } from '@/components/ui/badge'
@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useAuth } from '@/hooks/use-auth'
 import { ServerActionResponse } from '@/utils/action'
+import { cn } from '@/utils/cn'
 import { EllipsisVertical } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -19,13 +20,19 @@ type Props = {
   products: ServerActionResponse<typeof getAuthUserProducts>
 }
 
+function getStatusBadgeClassName(status: Props['products'][number]['status']) {
+  if (status === 'PUBLISHED') return 'bg-green-400 text-green-900'
+  if (status === 'DRAFT') return 'bg-gray-400 text-gray-900'
+  if (status === 'UNLISTED') return 'bg-yellow-300 text-yellow-900'
+}
+
 export function ProductsTable({ products: initialProducts }: Props) {
   const { user } = useAuth()
   const [products, setProducts] = useState(initialProducts)
 
-  const publishOrUnpublishProductAction = useServerAction(activeOrInactiveProduct, {
+  const updateProductStatusAction = useServerAction(updateProductStatus, {
     onSuccess: ({ data }) => {
-      setProducts((p) => p.map((item) => (item._id === data.productId ? { ...item, active: data.active } : item)))
+      setProducts((p) => p.map((item) => (item._id === data.productId ? { ...item, status: data.status } : item)))
       toast.success('Product updated')
     },
     onError: (error) => {
@@ -80,11 +87,9 @@ export function ProductsTable({ products: initialProducts }: Props) {
                     </TableCell>
                     <TableCell>
                       <button>
-                        {item.active ? (
-                          <Badge variant='default'>Active</Badge>
-                        ) : (
-                          <Badge variant='destructive'>Inactive</Badge>
-                        )}
+                        <Badge className={cn('capitalize', getStatusBadgeClassName(item.status))}>
+                          {item.status?.toLowerCase()}
+                        </Badge>
                       </button>
                     </TableCell>
                     <TableCell className='flex items-center justify-end gap-2'>
@@ -97,15 +102,15 @@ export function ProductsTable({ products: initialProducts }: Props) {
                         <DropdownMenuContent>
                           <DropdownMenuItem asChild>
                             <button
-                              className='w-full'
-                              onClick={() =>
-                                publishOrUnpublishProductAction.execute({
+                              className='w-full capitalize'
+                              onClick={() => {
+                                updateProductStatusAction.execute({
                                   productId: item._id,
-                                  active: !item.active,
+                                  status: item.status !== 'PUBLISHED' ? 'PUBLISHED' : 'UNLISTED',
                                 })
-                              }
+                              }}
                             >
-                              {item.active ? 'Inactive' : 'Active'}
+                              {item.status === 'PUBLISHED' ? 'Unlist' : 'Publish'}
                             </button>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
@@ -113,8 +118,7 @@ export function ProductsTable({ products: initialProducts }: Props) {
                               Edit
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem>Preview</DropdownMenuItem>
-                          <DropdownMenuItem>Remove</DropdownMenuItem>
+                          {/* <DropdownMenuItem>Preview</DropdownMenuItem> */}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

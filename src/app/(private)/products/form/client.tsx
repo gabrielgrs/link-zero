@@ -30,13 +30,13 @@ function numberToCurrencyCents(value: number) {
 const defaultValues = {
   _id: '',
   name: '',
-  cover: '' as string | undefined,
-  description: '',
+  description: '' as string | undefined,
   price: 0,
   category: '',
   currency: Object.values(currencies)[0] as Currency,
   slug: '',
-  file: '',
+  cover: '' as string | File[],
+  file: '' as string | File[],
 }
 
 export function ProductForm({ initialValues }: { storageKey?: string; initialValues?: typeof defaultValues }) {
@@ -70,6 +70,20 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
     <main>
       <form
         onSubmit={handleSubmit((values) => {
+          if (values.file[0] instanceof File) {
+            const file = values.file[0]
+            if (file.size > 5 * 1024 * 1024) {
+              return toast.error('File size must be less than 5mb.')
+            }
+          }
+
+          if (values.cover?.[0] instanceof File) {
+            const file = values.cover[0]
+            if (file.size > 2 * 1024 * 1024) {
+              return toast.error('Cover size must be less than 2mb.')
+            }
+          }
+
           return action.execute({ ...values, price: numberToCurrencyCents(Number(values.price)) })
         })}
       >
@@ -96,28 +110,7 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
             <>
               <Column size={4}>
                 <Fieldset label='Content' error={formState.errors.file?.message} info='Max of 5mb'>
-                  <Controller
-                    control={control}
-                    name='file'
-                    render={({ field }) => {
-                      return (
-                        <Input
-                          {...register('file', { required: requiredField })}
-                          type='file'
-                          value={field.value}
-                          accept={Object.values(mimeTypes).join(', ')}
-                          onChange={(event) => {
-                            const file = event.target.files?.[0]
-                            if (file && file.size > 5 * 1024 * 1024) {
-                              return toast.error('File size must be less than 5mb.')
-                            }
-
-                            field.onChange(event)
-                          }}
-                        />
-                      )
-                    }}
-                  />
+                  <Input type='file' {...register('file', { required: requiredField })} />
                 </Fieldset>
               </Column>
 
@@ -129,7 +122,7 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
             </>
           )}
 
-          <Column size={5}>
+          <Column size={4}>
             <Fieldset label='Name' error={formState.errors.name?.message}>
               <Input {...register('name', { required: requiredField })} placeholder='Type the product name' />
             </Fieldset>
@@ -166,7 +159,7 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
             </Fieldset>
           </Column>
 
-          <Column size={3}>
+          <Column size={4}>
             <Fieldset
               label='Product price'
               info='Use american format (1234.30)'
@@ -247,8 +240,8 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
           </Column>
 
           <Column size={4}>
-            <Fieldset label='Cover URL' error={formState.errors.cover?.message}>
-              <Input {...register('cover')} type='file' placeholder='Product Cover' />
+            <Fieldset label='Cover' error={formState.errors.cover?.message} info='Max of 2mb'>
+              <Input {...register('cover')} type='file' accept='image/*' />
             </Fieldset>
           </Column>
 

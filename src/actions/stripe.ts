@@ -13,7 +13,7 @@ import {
 } from '@/libs/stripe/utils'
 import { parseData } from '@/utils/action'
 import { getDomain } from '@/utils/action/server'
-import { Currency, currencies } from '@/utils/constants/currencies'
+import { currencies } from '@/utils/constants/currencies'
 import { PLATFORM_FEE } from '@/utils/constants/pricing'
 import { z } from 'zod'
 import { createOrFindUser } from './auth'
@@ -114,23 +114,6 @@ export const linkStripeAccountByCode = authProcedure
     return true
   })
 
-export async function getCurrencyPriceInCents(from: Currency, to: Currency) {
-  if (from === to) return 1
-
-  const fromTo = `${from.toUpperCase()}-${to.toUpperCase()}`
-  const url = `https://economia.awesomeapi.com.br/json/last/${fromTo}`
-
-  const response = await fetch(url, {
-    next: {
-      revalidate: 60 * 10, // 10 minutes
-    },
-  })
-
-  const json: Record<string, { high: string }> = await response.json()
-  const item = json[fromTo.replace('-', '')]
-  return Number(item.high.replace('.', '').slice(0, 3)) / 100
-}
-
 export const createCheckout = authProcedure
   .input(z.object({ productId: z.string(), email: z.string().nonempty() }))
   .handler(async ({ input }) => {
@@ -145,9 +128,7 @@ export const createCheckout = authProcedure
 
     if (!product.user.stripeAccountId) throw new Error('User is not connected to stripe')
 
-    const convertedCurrency = await getCurrencyPriceInCents('USD', product.currency)
-
-    const applicationFeeAmount = (PLATFORM_FEE * convertedCurrency) / 100
+    const applicationFeeAmount = (PLATFORM_FEE * product.price) / 100
 
     if (!product.stripePriceId || !product.stripeProductId) throw new Error('Failed to process your request')
 

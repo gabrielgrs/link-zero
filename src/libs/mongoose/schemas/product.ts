@@ -6,7 +6,7 @@ import { createMongooseSchema } from '../helpers'
 type SaleSchema = {
   _id: string
   user: Types.ObjectId
-  status: 'pending' | 'success' | 'failure'
+  status: 'PENDING' | 'SUCCESS' | 'FAILURE'
   price: number
   createdAt: Date
   updatedAt: Date
@@ -38,6 +38,9 @@ export const mimeTypes = {
   zip: 'application/zip',
 } as const
 
+export const productStatus = ['DRAFT', 'PUBLISHED', 'UNLISTED'] as const
+export type ProductStatus = (typeof productStatus)[number]
+
 export type ProductSchema = {
   _id: string
   name: string
@@ -45,14 +48,14 @@ export type ProductSchema = {
   cover?: string
   currency: Currency
   price: number
-  description: string
+  description?: string
   content: {
     url: string
     format: keyof typeof mimeTypes | 'custom'
   }
   user: Types.ObjectId
   category: keyof typeof categories
-  active: boolean
+  status: ProductStatus
   stripeProductId?: string
   stripePriceId?: string
   sales: SaleSchema[]
@@ -69,8 +72,8 @@ const saleSchema = new Schema<SaleSchema>({
   status: {
     type: String,
     required: true,
-    enum: ['pending', 'success', 'failure'],
-    default: 'pending',
+    enum: ['PENDING', 'SUCCESS', 'FAILURE'],
+    default: 'PENDING',
   },
   price: {
     type: Number,
@@ -125,9 +128,11 @@ export const product = createMongooseSchema<ProductSchema>(
         required: true,
         select: false,
       },
-      active: {
-        type: Boolean,
-        default: false,
+      status: {
+        type: String,
+        required: [true, 'Status is required'],
+        enum: productStatus,
+        default: 'DRAFT',
       },
       user: {
         type: Schema.Types.ObjectId,

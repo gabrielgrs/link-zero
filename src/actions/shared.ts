@@ -22,7 +22,7 @@ export const getLandingPageData = createServerAction().handler(async () => {
       },
     },
   ])
-  const totalSales = sales[0].totalSales as number
+  const totalSales = Number(sales[0]?.totalSales ?? 0)
 
   return parseData({ totalUsers, totalProducts, totalSales })
 })

@@ -46,11 +46,11 @@ export async function POST(req: Request) {
     const event = stripeClient.webhooks.constructEvent(requestText, signature, webhookSecret)
 
     if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
-      return checkoutSessionUpdate(event.data.object, 'success')
+      return checkoutSessionUpdate(event.data.object, 'SUCCESS')
     }
 
     if (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed') {
-      return checkoutSessionUpdate(event.data.object, 'failure')
+      return checkoutSessionUpdate(event.data.object, 'FAILURE')
     }
 
     if (event.type === 'account.updated') {
