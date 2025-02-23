@@ -72,11 +72,13 @@ export function ProductsTable({ products: initialProducts }: Props) {
                     <TableCell className='font-medium'>
                       <div>
                         <p>{item.name}</p>
-                        <PreviewLink
-                          href={`/product/${item.slug}`}
-                          className='text-xs text-muted-foreground text-ellipsis'
-                          target='_blank'
-                        />
+                        {item.status === 'PUBLISHED' && (
+                          <PreviewLink
+                            href={`/product/${item.slug}`}
+                            className='text-xs text-muted-foreground text-ellipsis'
+                            target='_blank'
+                          />
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>{item.sales.length}</TableCell>

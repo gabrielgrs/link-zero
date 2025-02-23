@@ -103,6 +103,7 @@ export const product = createMongooseSchema<ProductSchema>(
         type: String,
         required: [true, 'Currency is required'],
         enum: currencies,
+        immutable: true,
       },
       price: {
         type: Number,
@@ -118,15 +119,18 @@ export const product = createMongooseSchema<ProductSchema>(
           url: {
             type: String,
             required: true,
+            immutable: true,
           },
           format: {
             type: String,
             required: true,
             enum: [...Object.keys(mimeTypes), 'custom'],
+            immutable: true,
           },
         },
         required: true,
         select: false,
+        immutable: true,
       },
       status: {
         type: String,

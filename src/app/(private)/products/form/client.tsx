@@ -247,7 +247,7 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
 
           <Column size={12}>
             <Fieldset label='Description' error={formState.errors.description?.message}>
-              <Textarea {...register('description', { required: requiredField })} placeholder='Describe the product' />
+              <Textarea {...register('description')} placeholder='Describe the product' />
             </Fieldset>
           </Column>
 

@@ -22,6 +22,7 @@ export const user = createMongooseSchema<UserSchema>(
         type: String,
         required: [true, 'Email is required'],
         unique: [true, 'Slug already exists'],
+        immutable: true,
       },
       username: {
         type: String,

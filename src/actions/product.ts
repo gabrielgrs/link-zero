@@ -5,7 +5,7 @@ import { ProductSchema, productStatus } from '@/libs/mongoose/schemas/product'
 import { UserSchema } from '@/libs/mongoose/schemas/user'
 import { removeFile, uploadFile } from '@/libs/vercel/blob'
 import { parseData } from '@/utils/action'
-import { getDomain } from '@/utils/action/server'
+import { getDomain, redirectToNotFound } from '@/utils/action/server'
 import { currencies } from '@/utils/constants/currencies'
 
 import { z } from 'zod'
@@ -21,7 +21,7 @@ export const getProductBySlug = createServerAction()
       .populate<{ user: UserSchema }>('user')
       .lean()
 
-    if (!product) throw new Error('Not found')
+    if (!product) return redirectToNotFound()
 
     return parseData(product)
   })
