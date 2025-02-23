@@ -1,10 +1,10 @@
 import { getProductsByCategory } from '@/actions/product'
+import { CategoriesSection } from '@/app/(public)/categories-section'
 import { Link } from '@/components/link'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/utils/cn'
 import { ArrowLeft } from 'lucide-react'
-import { CategoriesSection } from '../../categories-section'
-import { ProductCard } from './product-card'
+import { ProductCard } from '../../../../components/product-card'
 
 type Props = {
   params: Promise<{ category: string }>

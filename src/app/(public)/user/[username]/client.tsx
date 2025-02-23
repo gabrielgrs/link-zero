@@ -1,9 +1,9 @@
 import { getUserByUsername } from '@/actions/auth'
 import { getProductsByUser } from '@/actions/product'
-import { ProductCard } from '@/app/(public)/store/[category]/product-card'
 import { Column, Grid } from '@/components/grid'
 import { Link } from '@/components/link'
 import { Logo } from '@/components/logo'
+import { ProductCard } from '@/components/product-card'
 import { ServerActionResponse } from '@/utils/action'
 
 type Props = {
