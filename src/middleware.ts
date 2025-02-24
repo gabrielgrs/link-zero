@@ -37,6 +37,7 @@ export async function middleware(request: NextRequest) {
   if (request.url.includes('/auth') && token) {
     const response = NextResponse.redirect(new URL(redirectTo || '/dashboard', origin))
     response.cookies.set('token', token, cookiesConfigs)
+    await new Promise((resolve) => setTimeout(resolve, 500))
     return response
   }
 }
