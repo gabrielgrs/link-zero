@@ -14,7 +14,6 @@ import {
 import { parseData } from '@/utils/action'
 import { getDomain } from '@/utils/action/server'
 import { currencies } from '@/utils/constants/currencies'
-import { PLATFORM_FEE } from '@/utils/constants/pricing'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { createOrFindUser } from './auth'
@@ -127,18 +126,30 @@ export const createCheckout = authProcedure
 
     const product = await db.product.findOne({ _id: input.productId }).populate<{ user: UserSchema }>('user').lean()
     if (!product) throw new Error('Not found')
+
+    const alreadyPurchaed = product.sales.find(
+      (sale) => sale.user.toString() === user._id.toString() && sale.status === 'SUCCESS',
+    )
+    if (alreadyPurchaed) throw new Error('You have already purchased this product')
+
+    await db.product.updateOne(
+      { _id: product._id },
+      { $pull: { sales: { user: user._id, status: { $in: ['PENDING', 'FAILED'] } } } },
+    )
+
     await db.product.updateOne({ _id: product._id }, { $push: { sales: { user: user._id, price: product.price } } })
 
     if (!product.user.stripeAccountId) throw new Error('User is not connected to stripe')
 
-    const applicationFeeAmount = (PLATFORM_FEE * product.price) / 100
+    // const applicationFeeAmount = (PLATFORM_FEE * product.price) / 100
+    const ONE_DOLLAR_FEE = 100
 
     if (!product.stripePriceId || !product.stripeProductId) throw new Error('Failed to process your request')
 
     const { url } = await createCheckoutSession({
       userId: user._id.toString(),
       customerId: user.stripeCustomerId,
-      applicationFeeAmount,
+      applicationFeeAmount: ONE_DOLLAR_FEE,
       currency: product.currency,
       destinationAccountId: product.user.stripeAccountId,
       productId: product._id.toString(),
