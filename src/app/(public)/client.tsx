@@ -4,7 +4,6 @@ import { Link } from '@/components/link'
 import { buttonVariants } from '@/components/ui/button'
 import { APP_NAME } from '@/utils/constants/brand'
 import { PLATFORM_FEE } from '@/utils/constants/pricing'
-import { formatCurrency } from '@/utils/currency'
 import { ArrowRight } from 'lucide-react'
 import { CategoriesSection } from './categories-section'
 
@@ -17,11 +16,22 @@ type Props = {
 
 export function HomeClient({ totalUsers, totalProducts, totalSales }: Props) {
   return (
-    <main className='space-y-20'>
-      <section className='text-center space-y-8'>
+    <main className='space-y-10'>
+      <section className='text-center space-y-4'>
         <span className='font-semibold'>{APP_NAME}</span>
 
-        <p className='text-muted-foreground'>Only {formatCurrency(PLATFORM_FEE, 'USD')} / transaction</p>
+        <div>
+          <p className='text-muted-foreground'>
+            Only <span className='text-primary font-semibold'>{PLATFORM_FEE / 100} dollar</span> per transaction
+          </p>
+          <Link
+            href='https://stripe.com/pricing'
+            className='text-center text-xs flex justify-self-center'
+            target='_blank'
+          >
+            + <span className='underline underline-offset-2'> Stripe Fees</span>
+          </Link>
+        </div>
 
         <div className='flex justify-center'>
           <Link href='/dashboard' className={buttonVariants()}>
@@ -49,7 +59,6 @@ export function HomeClient({ totalUsers, totalProducts, totalSales }: Props) {
 
       <hr />
 
-      <h1>Select a category</h1>
       <CategoriesSection />
     </main>
   )

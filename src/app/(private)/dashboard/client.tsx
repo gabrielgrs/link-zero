@@ -9,10 +9,13 @@ import { ArrowRight } from 'lucide-react'
 
 function PendingActionCard({ title, description, href }: { title: string; description?: string; href: string }) {
   return (
-    <Link href={href} className='flex justify-between items-center bg-accent/10 px-4 py-4 rounded-lg group'>
+    <Link
+      href={href}
+      className='flex justify-between bg-yellow-400 text-yellow-900 items-center px-4 py-4 rounded-lg group'
+    >
       <div className='flex flex-col'>
         <p className='font-semibold'>{title}</p>
-        <p className='text-muted-foreground font-thin text-xs'>{description}</p>
+        <p className='text-yellow-800 font-thin text-xs'>{description}</p>
       </div>
       <ArrowRight size={20} className='duration-500 group-hover:translate-x-2' />
     </Link>

@@ -14,6 +14,7 @@ import { categories } from '@/utils/categories'
 import { cn } from '@/utils/cn'
 import { Currency, currencies } from '@/utils/constants/currencies'
 import { MIN_PRODUCT_PRICE } from '@/utils/constants/pricing'
+import { goToPreview } from '@/utils/fn'
 import { invalidValue, requiredField } from '@/utils/messages'
 import { ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -130,13 +131,14 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
 
           <Column size={4}>
             <Fieldset
-              label='Slug'
+              label='Slug (product alias)'
               error={formState.errors.name?.message}
               info='Only lowercase letters, minus and numbers'
             >
               <Controller
                 name='slug'
                 control={control}
+                rules={{ required: requiredField }}
                 render={({ field }) => {
                   return (
                     <Input
@@ -260,13 +262,8 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
               type='button'
               variant='outline'
               onClick={() => {
-                const searchParams = new URLSearchParams()
                 const values = getValues()
-
-                Object.entries(values).forEach(([key, value]) => {
-                  searchParams.set(key, String(value))
-                })
-                window.open(`/product/preview?${searchParams.toString()}`, '_blank')
+                goToPreview(values)
               }}
             >
               Preview

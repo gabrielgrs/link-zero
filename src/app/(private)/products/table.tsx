@@ -10,6 +10,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { useAuth } from '@/hooks/use-auth'
 import { ServerActionResponse } from '@/utils/action'
 import { cn } from '@/utils/cn'
+import { goToPreview } from '@/utils/fn'
 import { EllipsisVertical } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -120,7 +121,13 @@ export function ProductsTable({ products: initialProducts }: Props) {
                               Edit
                             </Link>
                           </DropdownMenuItem>
-                          {/* <DropdownMenuItem>Preview</DropdownMenuItem> */}
+                          <DropdownMenuItem
+                            onClick={() => {
+                              goToPreview(item)
+                            }}
+                          >
+                            Preview
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

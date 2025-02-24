@@ -12,5 +12,5 @@ export default async function Page({ searchParams }: Props) {
   if (error) throw error
 
   const params = await searchParams
-  return <ProductClient product={{ ...params, user: authUser }} isPreview />
+  return <ProductClient product={{ ...params, user: authUser, sales: [] }} isPreview />
 }
