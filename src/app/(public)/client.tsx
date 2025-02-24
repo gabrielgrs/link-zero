@@ -49,6 +49,7 @@ export function HomeClient({ totalUsers, totalProducts, totalSales }: Props) {
 
       <hr />
 
+      <h1>Select a category</h1>
       <CategoriesSection />
     </main>
   )
