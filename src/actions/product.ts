@@ -38,7 +38,7 @@ export const getAuthUserProducts = authProcedure.handler(async ({ ctx }) => {
 
 export const getUserLibraryProducts = authProcedure.handler(async ({ ctx }) => {
   const productsBouthByUser = await db.product
-    .find({ sales: { $elemMatch: { user: ctx.user._id } } })
+    .find({ sales: { $elemMatch: { user: ctx.user._id, status: 'SUCCESS' } } })
     .populate<{ user: UserSchema }>('user')
     .lean()
   return parseData(productsBouthByUser)

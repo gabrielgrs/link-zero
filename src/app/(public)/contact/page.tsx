@@ -46,7 +46,7 @@ export default function ContactForm() {
         render={({ field }) => {
           return (
             <Select onValueChange={(e) => field.onChange(e)}>
-              <SelectTrigger className='w-full'>
+              <SelectTrigger className='w-full' hasValue={Boolean(field.value)}>
                 <SelectValue placeholder='Select' />
               </SelectTrigger>
               <SelectContent>

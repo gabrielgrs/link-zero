@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookiesConfigs } from './utils/cookies/configs'
 
-const RATE_LIMIT_IN_MS = 3_000
-const MAX_REQUESTS = 5
+const RATE_LIMIT_IN_MS = 1000
+const MAX_REQUESTS = 20
 const ipTracker = new Map<string, { count: number; startTime: number }>()
 
 export async function middleware(request: NextRequest) {

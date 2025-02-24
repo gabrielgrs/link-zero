@@ -3,6 +3,8 @@
 import { Column, Grid } from '@/components/grid'
 import { Link } from '@/components/link'
 import { useAuth } from '@/hooks/use-auth'
+import { ProductSchema } from '@/libs/mongoose/schemas/product'
+import { formatCurrency } from '@/utils/currency'
 import { ArrowRight } from 'lucide-react'
 
 function PendingActionCard({ title, description, href }: { title: string; description?: string; href: string }) {
@@ -17,13 +19,49 @@ function PendingActionCard({ title, description, href }: { title: string; descri
   )
 }
 
-export function DashboardClient({}) {
+function InfoCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className='w-full border bg-foreground/5 p-4 rounded-lg space-y-4'>
+      <p className='text-muted-foreground'>{label}</p>
+      <p className='text-2xl font-semibold'>{value}</p>
+    </div>
+  )
+}
+
+export function DashboardClient({ sales }: { sales: ProductSchema['sales'] }) {
   const { user } = useAuth()
+
+  const successSales = sales.filter((x) => x.status === 'SUCCESS')
+  const pendingSales = sales.filter((x) => x.status === 'PENDING')
+  const failedSales = sales.filter((x) => x.status === 'FAILED')
 
   return (
     <main>
       <Grid>
         <Column size={12}>{user.name ? <h1>Hello, {user.name.split(' ').at(0)}! 👋</h1> : <h1>Hello! 👋</h1>}</Column>
+
+        <Column size={6}>
+          <InfoCard
+            label='Revenue'
+            value={formatCurrency(
+              successSales.reduce((acc, curr) => acc + curr.price, 0),
+              'USD',
+            )}
+          />
+        </Column>
+
+        <Column size={6}>
+          <InfoCard label='Successful sales' value={String(successSales.length)} />
+        </Column>
+
+        <Column size={6}>
+          <InfoCard label='Pending sales' value={String(pendingSales.length)} />
+        </Column>
+
+        <Column size={6}>
+          <InfoCard label='Failed sales' value={String(failedSales.length)} />
+        </Column>
+
         {!user.stripeAccountId && <Column size={12}>Pending actions</Column>}
         {!user.stripeAccountId && (
           <>

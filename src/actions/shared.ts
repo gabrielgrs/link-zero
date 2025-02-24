@@ -1,10 +1,21 @@
 'use server'
 
 import { db } from '@/libs/mongoose'
+import { ProductSchema } from '@/libs/mongoose/schemas/product'
 import { sendEmail } from '@/libs/resend'
 import { parseData } from '@/utils/action'
 import { z } from 'zod'
 import { createServerAction } from 'zsa'
+import { authProcedure } from './procedures'
+
+export const getDashboardData = authProcedure.handler(async ({ ctx }) => {
+  const userProducts = await db.product.find({ user: ctx.user._id }).lean()
+  const allSales = userProducts.reduce((acc: ProductSchema['sales'], curr) => acc.concat(curr.sales), [])
+
+  return parseData({
+    allSales,
+  })
+})
 
 export const getLandingPageData = createServerAction().handler(async () => {
   const totalUsers = await db.user.countDocuments()

@@ -14,7 +14,7 @@ async function checkoutSessionUpdate(
 
   const product = await db.product.findOneAndUpdate(
     { _id: productId, 'sales.user': userId },
-    { $set: { 'sales.$.status': 'success' } },
+    { $set: { 'sales.$.status': status } },
     { new: true },
   )
 
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     }
 
     if (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed') {
-      return checkoutSessionUpdate(event.data.object, 'FAILURE')
+      return checkoutSessionUpdate(event.data.object, 'FAILED')
     }
 
     if (event.type === 'account.updated') {

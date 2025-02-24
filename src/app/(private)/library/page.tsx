@@ -18,7 +18,7 @@ export default async function Page() {
         <Column size={12} className='flex justify-between items-center gap-2'>
           <div>
             <h1>Library</h1>
-            <p className='text-muted-foreground text-sm'>Bought products</p>
+            <p className='text-muted-foreground text-sm'>My list of products</p>
           </div>
         </Column>
         <Column size={12}>

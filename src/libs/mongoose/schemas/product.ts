@@ -3,10 +3,13 @@ import { Currency, currencies } from '@/utils/constants/currencies'
 import { Schema, Types } from 'mongoose'
 import { createMongooseSchema } from '../helpers'
 
+const saleStatus = ['PENDING', 'SUCCESS', 'FAILED'] as const
+type SaleStatus = (typeof saleStatus)[number]
+
 type SaleSchema = {
   _id: string
   user: Types.ObjectId
-  status: 'PENDING' | 'SUCCESS' | 'FAILURE'
+  status: SaleStatus
   price: number
   createdAt: Date
   updatedAt: Date
@@ -72,7 +75,7 @@ const saleSchema = new Schema<SaleSchema>({
   status: {
     type: String,
     required: true,
-    enum: ['PENDING', 'SUCCESS', 'FAILURE'],
+    enum: saleStatus,
     default: 'PENDING',
   },
   price: {
