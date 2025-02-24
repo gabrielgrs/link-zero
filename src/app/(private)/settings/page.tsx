@@ -3,7 +3,7 @@ import { linkStripeAccountByCode } from '@/actions/stripe'
 import { SettingsClient } from './client'
 
 type Props = {
-  searchParams: { code?: string }
+  searchParams: Promise<{ code?: string }>
 }
 
 export default async function SettingsPage({ searchParams }: Props) {
