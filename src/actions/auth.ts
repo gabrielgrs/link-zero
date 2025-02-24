@@ -5,6 +5,8 @@ import { db } from '@/libs/mongoose'
 import { sendEmailAsParagraphs } from '@/libs/resend'
 import { createOrFindCustomerByEmail, findAccountByEmail } from '@/libs/stripe/utils'
 import { parseData } from '@/utils/action'
+import { APP_NAME } from '@/utils/constants/brand'
+import dayjs from 'dayjs'
 import { jwtDecode } from 'jwt-decode'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -66,9 +68,23 @@ export const authenticate = createServerAction()
     }
 
     if (!input.code) {
+      const session = await db.session.findOne({ email: input.email })
+      if (session) {
+        const currentTime = dayjs()
+        const sessionTime = dayjs(session.createdAt)
+        const diffTime = currentTime.diff(sessionTime, 'seconds')
+
+        const SECONDS_BEFORE_NEW_TRY = 180
+
+        if (diffTime < SECONDS_BEFORE_NEW_TRY) {
+          throw new Error(`Wait ${SECONDS_BEFORE_NEW_TRY - diffTime} seconds before trying again`)
+        }
+      }
+
       const generatedCode = Math.floor(100000 + Math.random() * 900000).toString()
+      await db.session.deleteMany({ email: input.email })
       await db.session.create({ email: userCreationResponse.email, code: generatedCode })
-      await sendEmailAsParagraphs(input.email, 'Verification Code', [
+      await sendEmailAsParagraphs(input.email, `${APP_NAME} verification code is ${generatedCode}`, [
         `Hello!`,
         'Here is your verification code',
         `<strong>${generatedCode}</strong>`,
