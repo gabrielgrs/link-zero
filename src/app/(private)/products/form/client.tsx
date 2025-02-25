@@ -17,8 +17,9 @@ import { MIN_PRODUCT_PRICE } from '@/utils/constants/pricing'
 import { goToPreview } from '@/utils/fn'
 import { invalidValue, requiredField } from '@/utils/messages'
 import { ChevronDown } from 'lucide-react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Controller, useForm } from 'react-hook-form'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import slugify from 'slugify'
 import { toast } from 'sonner'
 import { useServerAction } from 'zsa-react'
@@ -46,6 +47,8 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
   const { control, register, formState, handleSubmit, getValues } = useForm({
     defaultValues: initialValues ? { ...defaultValues, ...initialValues } : defaultValues,
   })
+
+  const cover = useWatch({ control, name: 'cover' })
 
   const action = useServerAction(isEdition ? updateProduct : createProduct, {
     onSuccess: () => {
@@ -110,7 +113,12 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
           {!isEdition && (
             <>
               <Column size={4}>
-                <Fieldset label='Content' error={formState.errors.file?.message} info='Max of 5mb'>
+                <Fieldset
+                  label='Content'
+                  error={formState.errors.file?.message}
+                  info='Max of 5mb'
+                  tooltip={`Aceppted formats: ${Object.keys(mimeTypes).join(', ')}`}
+                >
                   <Input type='file' {...register('file', { required: requiredField })} />
                 </Fieldset>
               </Column>
@@ -247,6 +255,12 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
               <Input {...register('cover')} type='file' accept='image/*' />
             </Fieldset>
           </Column>
+
+          {cover[0] instanceof File && (
+            <Column size={4}>
+              <Image src={URL.createObjectURL(cover[0])} height={120} width={120} alt='Product cover' />
+            </Column>
+          )}
 
           <Column size={12}>
             <Fieldset label='Description' error={formState.errors.description?.message}>

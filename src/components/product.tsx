@@ -7,6 +7,7 @@ import { cn } from '@/utils/cn'
 import { APP_NAME } from '@/utils/constants/brand'
 import { formatCurrency } from '@/utils/currency'
 import { Copy, Dot, Facebook, Flame, Twitter } from 'lucide-react'
+import Image from 'next/image'
 import { toast } from 'sonner'
 import { Link } from './link'
 import { Button } from './ui/button'
@@ -47,15 +48,17 @@ export function Product({
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
       <div className='space-y-8'>
-        <div
-          className={cn('h-40 bg-foreground/5 w-full')}
-          style={{
-            backgroundImage: `url(${cover})`,
-            objectFit: 'cover',
-            objectPosition: 'center',
-            backgroundSize: '100%',
-          }}
-        />
+        {cover && (
+          <div className={cn('relative h-[240px] bg-foreground/5 w-full')}>
+            <Image
+              src={cover}
+              alt={name}
+              fill
+              className='rounded-lg'
+              style={{ objectFit: 'cover', objectPosition: 'center', backgroundSize: '100%' }}
+            />
+          </div>
+        )}
         <div>
           <Label>Description</Label>
           <p

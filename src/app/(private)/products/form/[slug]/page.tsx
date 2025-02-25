@@ -14,15 +14,13 @@ export default async function Page({ params }: Props) {
       initialValues={{
         _id: product._id,
         category: product.category,
-
         currency: product.currency,
         description: product.description,
         name: product.name,
         price: product.price,
         slug: product.slug,
         file: '',
-        // TODO: fix
-        cover: '', // product.cover,
+        cover: product.cover ?? '',
       }}
     />
   )

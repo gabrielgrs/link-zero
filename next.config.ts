@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        hostname: 'res.cloudinary.com',
+        hostname: '7izlrmyww7k6yebp.public.blob.vercel-storage.com',
       },
     ],
   },
