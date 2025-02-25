@@ -16,13 +16,9 @@ import { activeOrInactiveProductAndPrice, createProductAndPrice, updateProductAn
 export const getProductBySlug = createServerAction()
   .input(z.object({ slug: z.string() }))
   .handler(async ({ input }) => {
-    const product = await db.product
-      .findOne({ slug: input.slug, status: 'PUBLISHED' })
-      .populate<{ user: UserSchema }>('user')
-      .lean()
+    const product = await db.product.findOne({ slug: input.slug }).populate<{ user: UserSchema }>('user').lean()
 
     if (!product) return redirectToNotFound()
-
     return parseData(product)
   })
 
@@ -58,18 +54,18 @@ export const createProduct = authProcedure
       slug: z.string().nonempty(),
       category: z.string().nonempty(),
       description: z.string().nonempty(),
-      file: z.array(z.instanceof(File)),
+      file: z.instanceof(File),
       name: z.string().nonempty(),
       currency: z.enum(currencies),
       price: z.number().min(3),
-      cover: z.array(z.instanceof(File)).optional(),
+      cover: z.instanceof(File).optional(),
     } as Record<keyof ProductSchema | 'file', any>),
   )
   .handler(async ({ ctx, input }) => {
     if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
 
-    const content = await getContent(input.file[0])
-    const cover = input.cover ? await uploadFile(input.cover[0]).then((res) => res.url) : null
+    const content = await getContent(input.file)
+    const cover = input.cover ? await uploadFile(input.cover).then((res) => res.url) : null
 
     const product = await db.product.create({
       ...input,
@@ -89,8 +85,7 @@ export const updateProduct = authProcedure
       category: z.string().nonempty(),
       description: z.string().nonempty(),
       name: z.string().nonempty(),
-      cover: z.array(z.instanceof(File)).optional(),
-      coverToRemove: z.string().optional(),
+      cover: z.union([z.instanceof(File), z.string()]).optional(),
     }),
   )
   .handler(async ({ ctx, input }) => {
@@ -98,7 +93,12 @@ export const updateProduct = authProcedure
 
     const { _id, ...rest } = input
 
-    const newCover = input.cover ? await uploadFile(input.cover[0]).then((res) => res.url) : input.cover
+    if (input.cover instanceof File) {
+      const product = await db.product.findOne({ _id, user: ctx.user._id }).lean()
+      if (product?.cover) await removeFile(product.cover)
+    }
+
+    const newCover = input.cover instanceof File ? await uploadFile(input.cover).then((res) => res.url) : input.cover
 
     const product = await db.product.findOneAndUpdate(
       { _id, user: ctx.user._id },
@@ -116,8 +116,6 @@ export const updateProduct = authProcedure
       })
       if (err) throw err
     }
-
-    if (input.coverToRemove) await removeFile(input.coverToRemove)
 
     return parseData(input)
   })
