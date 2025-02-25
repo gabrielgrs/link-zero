@@ -1,6 +1,6 @@
 'use client'
 
-import { getProductsByCategory } from '@/actions/product'
+import { getProductsByQuery } from '@/actions/product'
 import { Link } from '@/components/link'
 import { buttonVariants } from '@/components/ui/button'
 import { ServerActionResponse } from '@/utils/action'
@@ -10,7 +10,7 @@ import { motion } from 'motion/react'
 
 type Props = {
   product: Pick<
-    ServerActionResponse<typeof getProductsByCategory>[number],
+    ServerActionResponse<typeof getProductsByQuery>[number],
     '_id' | 'name' | 'cover' | 'slug' | 'price' | 'currency'
   >
   user: {

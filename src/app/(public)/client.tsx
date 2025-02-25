@@ -5,7 +5,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { APP_NAME } from '@/utils/constants/brand'
 import { PLATFORM_FEE } from '@/utils/constants/pricing'
 import { ArrowRight } from 'lucide-react'
-import { CategoriesSection } from './categories-section'
+import { Filters } from './filters'
 
 type Props = {
   // products: ServerActionResponse<typeof getRandomProducts>
@@ -22,7 +22,7 @@ export function HomeClient({ totalUsers, totalProducts, totalSales }: Props) {
 
         <div>
           <p className='text-muted-foreground'>
-            Only <span className='text-primary font-semibold'>{PLATFORM_FEE / 100} dollar</span> per transaction
+            Only <span className='text-primary font-semibold'>{PLATFORM_FEE / 100} dollar</span> per sale
           </p>
           <Link
             href='https://stripe.com/pricing'
@@ -59,7 +59,7 @@ export function HomeClient({ totalUsers, totalProducts, totalSales }: Props) {
 
       <hr />
 
-      <CategoriesSection />
+      <Filters />
     </main>
   )
 }

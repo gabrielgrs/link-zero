@@ -1,17 +1,20 @@
-import { getProductsByCategory } from '@/actions/product'
-import { CategoriesSection } from '@/app/(public)/categories-section'
+import { getProductsByQuery } from '@/actions/product'
+import { Filters } from '@/app/(public)/filters'
 import { Link } from '@/components/link'
+import { ProductCard } from '@/components/product-card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/utils/cn'
 import { ArrowLeft } from 'lucide-react'
-import { ProductCard } from '../../../../components/product-card'
 
 type Props = {
-  params: Promise<{ category: string }>
+  searchParams: Promise<{ searchText?: string; category?: string }>
 }
-export default async function Page({ params }: Props) {
-  const { category } = await params
-  const [products, error] = await getProductsByCategory({ category: category.toUpperCase() })
+export default async function Page({ searchParams }: Props) {
+  const { searchText, category } = await searchParams
+  const [products, error] = await getProductsByQuery({
+    category: category ? category.toUpperCase() : '',
+    searchText,
+  })
   if (error) throw error
 
   return (
@@ -19,7 +22,9 @@ export default async function Page({ params }: Props) {
       <Link href='/' className={cn(buttonVariants({ variant: 'outline' }), 'w-max')}>
         <ArrowLeft size={16} /> Voltar para home
       </Link>
-      <CategoriesSection selectedCategory={category} />
+
+      <Filters initialValues={{ searchText, category: category ? category.toUpperCase() : undefined }} />
+
       {products.length === 0 && (
         <p className='text-lg text-muted-foreground text-center'>Nothing found. Try another category!</p>
       )}

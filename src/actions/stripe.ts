@@ -104,16 +104,16 @@ export const linkAccount = authProcedure.handler(async () => {
 export const linkStripeAccountByCode = authProcedure
   .input(z.object({ code: z.string().nonempty() }))
   .handler(async ({ input, ctx }) => {
-    if (ctx.user.stripeAccountId) return redirect('/settings')
+    if (!ctx.user.stripeAccountId) {
+      const response = await decodeOAuthToken(input.code)
 
-    const response = await decodeOAuthToken(input.code)
+      await db.user.findOneAndUpdate(
+        { _id: ctx.user._id, stripeAccountId: null },
+        { stripeAccountId: response.stripe_user_id },
+      )
+    }
 
-    await db.user.findOneAndUpdate(
-      { _id: ctx.user._id, stripeAccountId: null },
-      { stripeAccountId: response.stripe_user_id },
-    )
-
-    return true
+    return redirect('/settings')
   })
 
 export const createCheckout = authProcedure

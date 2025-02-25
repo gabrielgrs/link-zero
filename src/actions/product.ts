@@ -122,12 +122,23 @@ export const updateProduct = authProcedure
     return parseData(input)
   })
 
-export const getProductsByCategory = createServerAction()
-  .input(z.object({ category: z.string().nonempty() }))
+export const getProductsByQuery = createServerAction()
+  .input(z.object({ searchText: z.string().optional(), category: z.string().optional() }))
   .handler(async ({ input }) => {
+    const query: Record<string, unknown> = {
+      status: 'PUBLISHED',
+    }
+
+    if (input.searchText) {
+      query.name = { $regex: input.searchText, $options: 'i' }
+    }
+
+    if (input.category) {
+      query.category = input.category
+    }
+
     const products = await db.product
-      .find({ category: input.category, status: 'PUBLISHED' })
-      // .find()
+      .find(query)
       .populate<{ user: UserSchema }>('user')
       .select('+content')
       .limit(20)
