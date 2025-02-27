@@ -1,5 +1,7 @@
 import { getUserLibraryProducts } from '@/actions/product'
 import { Column, Grid } from '@/components/grid'
+import { Link } from '@/components/link'
+import { buttonVariants } from '@/components/ui/button'
 // import { Button } from '@/components/ui/button'
 // import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -20,6 +22,9 @@ export default async function Page() {
             <h1>Library</h1>
             <p className='text-muted-foreground text-sm'>My list of products</p>
           </div>
+          <Link href='/store' className={buttonVariants()}>
+            Search products
+          </Link>
         </Column>
         <Column size={12}>
           <Table>

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ServerActionResponse } from '@/utils/action'
+import { displayErrors } from '@/utils/action/client'
 import { requiredField } from '@/utils/messages'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -28,9 +29,7 @@ export function SettingsClient({ user }: { user: ServerActionResponse<typeof get
     onSuccess: () => {
       toast.success('Profile updated')
     },
-    onError: (error) => {
-      toast.error(error.err.message || 'Failed. Try again later.')
-    },
+    onError: (error) => displayErrors(error),
   })
 
   return (

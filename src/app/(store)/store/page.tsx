@@ -28,7 +28,7 @@ export default async function Page({ searchParams }: Props) {
       {products.length === 0 && (
         <p className='text-lg text-muted-foreground text-center'>Nothing found. Try another category!</p>
       )}
-      <div className='grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
+      <div className='grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
         {products.map((product, index) => (
           <ProductCard
             key={product._id}

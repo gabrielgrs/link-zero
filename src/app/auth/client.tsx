@@ -7,6 +7,7 @@ import { Logo } from '@/components/logo'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp'
+import { displayErrors } from '@/utils/action/client'
 import { APP_DESCRIPTION, APP_NAME } from '@/utils/constants/brand'
 import { requiredField } from '@/utils/messages'
 import { GoogleOAuthProvider } from '@react-oauth/google'
@@ -31,9 +32,7 @@ export function AuthClient({ redirectTo }: Props) {
   const [needRegister, setNeedRegister] = useState(false)
 
   const action = useServerAction(authenticate, {
-    onError: ({ err }) => {
-      toast.error(err.message || 'Failed. Try again later.')
-    },
+    onError: (error) => displayErrors(error),
     onSuccess: ({ data }) => {
       if (data.status === 'SHOULD_REGISTER') {
         toast.info('Finish your register')

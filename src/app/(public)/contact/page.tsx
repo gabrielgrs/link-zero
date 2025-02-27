@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { displayErrors } from '@/utils/action/client'
 import { requiredField } from '@/utils/messages'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -25,9 +26,7 @@ export default function ContactForm() {
       reset()
       toast.success('Message sent with success')
     },
-    onError: () => {
-      toast.error('Failed to send message, try again later')
-    },
+    onError: (error) => displayErrors(error),
   })
 
   return (

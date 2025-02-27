@@ -16,6 +16,9 @@ export function PublicNavbar() {
         <Link href='/contact' className={cn(buttonVariants({ variant: 'ghost' }))}>
           Contact
         </Link>
+        <Link href='/store' className={cn(buttonVariants({ variant: 'ghost' }))}>
+          Store
+        </Link>
         <Link href='/dashboard' className={cn(buttonVariants(), 'group')}>
           Dashboard <ArrowRight size={16} className='duration-500 group-hover:translate-x-2' />
         </Link>

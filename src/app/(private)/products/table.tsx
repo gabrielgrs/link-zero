@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useAuth } from '@/hooks/use-auth'
 import { ServerActionResponse } from '@/utils/action'
+import { displayErrors } from '@/utils/action/client'
 import { cn } from '@/utils/cn'
 import { goToPreview } from '@/utils/fn'
 import { EllipsisVertical } from 'lucide-react'
@@ -36,9 +37,7 @@ export function ProductsTable({ products: initialProducts }: Props) {
       setProducts((p) => p.map((item) => (item._id === data.productId ? { ...item, status: data.status } : item)))
       toast.success('Product updated')
     },
-    onError: (error) => {
-      toast.error(error.err.message || 'Failed. Try again later.')
-    },
+    onError: (error) => displayErrors(error),
   })
 
   return (

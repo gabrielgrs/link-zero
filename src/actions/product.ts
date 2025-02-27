@@ -1,7 +1,7 @@
 'use server'
 
 import { db } from '@/libs/mongoose'
-import { ProductSchema, productStatus } from '@/libs/mongoose/schemas/product'
+import { productStatus } from '@/libs/mongoose/schemas/product'
 import { UserSchema } from '@/libs/mongoose/schemas/user'
 import { removeFile, uploadFile } from '@/libs/vercel/blob'
 import { parseData } from '@/utils/action'
@@ -57,9 +57,9 @@ export const createProduct = authProcedure
       file: z.instanceof(File),
       name: z.string().nonempty(),
       currency: z.enum(currencies),
-      price: z.number().min(3),
+      price: z.number().min(3).nonnegative(),
       cover: z.instanceof(File).optional(),
-    } as Record<keyof ProductSchema | 'file', any>),
+    }),
   )
   .handler(async ({ ctx, input }) => {
     if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')

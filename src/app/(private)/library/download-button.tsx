@@ -2,6 +2,7 @@
 
 import { generateDownloadUrl } from '@/actions/product'
 import { Button } from '@/components/ui/button'
+import { displayErrors } from '@/utils/action/client'
 import { toast } from 'sonner'
 import { useServerAction } from 'zsa-react'
 
@@ -11,9 +12,7 @@ export function DownloadButton({ productId }: { productId: string }) {
       window.open(data.url, '_blank')
       toast.success('Download started!')
     },
-    onError: (error) => {
-      toast.error(error.err.message || 'Failed. Try again later.')
-    },
+    onError: (error) => displayErrors(error),
   })
 
   return (

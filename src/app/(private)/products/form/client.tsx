@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { mimeTypes } from '@/libs/mongoose/schemas/product'
+import { displayErrors } from '@/utils/action/client'
 import { categories } from '@/utils/categories'
 import { cn } from '@/utils/cn'
 import { Currency, currencies } from '@/utils/constants/currencies'
@@ -32,7 +33,7 @@ function numberToCurrencyCents(value: number) {
 const defaultValues = {
   _id: '',
   name: '',
-  description: '' as string | undefined,
+  description: '',
   price: 0,
   category: '',
   currency: Object.values(currencies)[0] as Currency,
@@ -53,9 +54,7 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
       toast.success('Success!')
       push('/products')
     },
-    onError: (error) => {
-      toast.error(error.err.message || 'Failed. Try again later.')
-    },
+    onError: (error) => displayErrors(error),
   })
 
   const generateDownloadUrlAction = useServerAction(generateDownloadUrl, {
@@ -63,16 +62,14 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
       toast.success('Downloading file...')
       window.open(data.url, '_blank')
     },
-    onError: (error) => {
-      toast.error(error.err.message || 'Failed. Try again later.')
-    },
+    onError: (error) => displayErrors(error),
   })
 
   return (
     <main>
       <form
         onSubmit={handleSubmit((values) => {
-          return action.execute({ ...values, price: numberToCurrencyCents(Number(values.price)) })
+          if (isEdition) return action.execute({ ...values, price: numberToCurrencyCents(Number(values.price)) })
         })}
       >
         <Grid>

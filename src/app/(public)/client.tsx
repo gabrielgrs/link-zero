@@ -17,7 +17,7 @@ type Props = {
 export function HomeClient({ totalUsers, totalProducts, totalSales }: Props) {
   return (
     <main className='space-y-10'>
-      <section className='text-center space-y-4'>
+      <section className='text-center space-y-4 relative'>
         <span className='font-semibold'>{APP_NAME}</span>
 
         <div>

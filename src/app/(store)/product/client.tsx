@@ -7,6 +7,7 @@ import { Logo } from '@/components/logo'
 import { Product } from '@/components/product'
 import { useAuth } from '@/hooks/use-auth'
 import { ServerActionResponse } from '@/utils/action'
+import { displayErrors } from '@/utils/action/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useServerAction } from 'zsa-react'
@@ -24,9 +25,7 @@ export function ProductClient({ product, isPreview = false }: Props) {
       toast.success('We are redirecting you to the payment...')
       return push(data.url)
     },
-    onError: (error) => {
-      toast.error(error.err.message || 'Failed. Try again later.')
-    },
+    onError: (error) => displayErrors(error),
   })
 
   return (
