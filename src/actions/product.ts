@@ -42,9 +42,10 @@ export const getUserLibraryProducts = authProcedure.handler(async ({ ctx }) => {
 
 async function getContent(file: File) {
   const uploadedFile = await uploadFile(file)
+  const formatFromName = file.name.split('.').pop()
   return {
     url: uploadedFile.url,
-    format: file.type.split('/')[1],
+    format: formatFromName || file.type.split('/')[1],
   }
 }
 
@@ -62,19 +63,29 @@ export const createProduct = authProcedure
     }),
   )
   .handler(async ({ ctx, input }) => {
-    if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
+    let contentUrl = ''
+    let coverUrl = ''
 
-    const content = await getContent(input.file)
-    const cover = input.cover ? await uploadFile(input.cover).then((res) => res.url) : null
+    try {
+      if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
 
-    const product = await db.product.create({
-      ...input,
-      cover,
-      content,
-      user: ctx.user._id,
-    })
+      const content = await getContent(input.file)
+      const cover = input.cover ? await uploadFile(input.cover).then((res) => res.url) : null
 
-    return parseData(product)
+      const product = await db.product.create({
+        ...input,
+        cover,
+        content,
+        user: ctx.user._id,
+      })
+
+      return parseData(product)
+    } catch (error) {
+      if (contentUrl) await removeFile(contentUrl)
+      if (coverUrl) await removeFile(coverUrl)
+
+      throw error
+    }
   })
 
 export const updateProduct = authProcedure
@@ -89,35 +100,44 @@ export const updateProduct = authProcedure
     }),
   )
   .handler(async ({ ctx, input }) => {
-    if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
+    let newCover: string | undefined = ''
 
-    const { _id, ...rest } = input
+    try {
+      if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
 
-    if (input.cover instanceof File) {
-      const product = await db.product.findOne({ _id, user: ctx.user._id }).lean()
-      if (product?.cover) await removeFile(product.cover)
+      const { _id, ...rest } = input
+
+      if (input.cover instanceof File) {
+        const product = await db.product.findOne({ _id, user: ctx.user._id }).lean()
+        if (product?.cover) await removeFile(product.cover)
+      }
+
+      newCover = input.cover instanceof File ? await uploadFile(input.cover).then((res) => res.url) : input.cover
+
+      const product = await db.product.findOneAndUpdate(
+        { _id, user: ctx.user._id },
+        newCover ? { ...rest, cover: newCover } : rest,
+      )
+      if (!product) throw new Error('Not found')
+
+      if (product.stripePriceId && product.stripeProductId) {
+        const [, err] = await updateProductAndPrice({
+          stripeProductId: product.stripeProductId,
+          stripePriceId: product.stripePriceId,
+          name: input.name,
+          description: input.description,
+          cover: newCover,
+        })
+        if (err) throw err
+      }
+
+      return parseData(input)
+    } catch (error) {
+      if (input.cover instanceof File && newCover && typeof newCover === 'string') {
+        await removeFile(newCover)
+      }
+      throw error
     }
-
-    const newCover = input.cover instanceof File ? await uploadFile(input.cover).then((res) => res.url) : input.cover
-
-    const product = await db.product.findOneAndUpdate(
-      { _id, user: ctx.user._id },
-      newCover ? { ...rest, cover: newCover } : rest,
-    )
-    if (!product) throw new Error('Not found')
-
-    if (product.stripePriceId && product.stripeProductId) {
-      const [, err] = await updateProductAndPrice({
-        stripeProductId: product.stripeProductId,
-        stripePriceId: product.stripePriceId,
-        name: input.name,
-        description: input.description,
-        cover: newCover,
-      })
-      if (err) throw err
-    }
-
-    return parseData(input)
   })
 
 export const getProductsByQuery = createServerAction()

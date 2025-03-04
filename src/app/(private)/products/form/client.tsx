@@ -69,7 +69,7 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
     <main>
       <form
         onSubmit={handleSubmit((values) => {
-          if (isEdition) return action.execute({ ...values, price: numberToCurrencyCents(Number(values.price)) })
+          return action.execute({ ...values, price: numberToCurrencyCents(Number(values.price)) })
         })}
       >
         <Grid>

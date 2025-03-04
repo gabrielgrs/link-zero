@@ -19,12 +19,14 @@ export default async function Subscription({ searchParams }: Props) {
             {type === 'success' ? 'Subscription successful' : 'Subscription failed'}
           </p>
         </Column>
-        <Column size={12}>
-          <Link href='/library' className='underline underline-offset-4 flex items-center gap-1'>
-            <ArrowLeft size={16} />
-            Check my product
-          </Link>
-        </Column>
+        {type === 'success' && (
+          <Column size={12}>
+            <Link href='/library' className='underline underline-offset-4 flex items-center gap-1'>
+              <ArrowLeft size={16} />
+              Check my product
+            </Link>
+          </Column>
+        )}
       </Grid>
     </main>
   )

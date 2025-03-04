@@ -39,7 +39,9 @@ export function AuthClient({ redirectTo }: Props) {
         return setNeedRegister(true)
       }
       if (data.status === 'WAITING_FOR_CODE') {
-        toast.info('Check your email for the code')
+        toast.info('Check your email for the code', {
+          description: 'Check the spam or junk folder — just in case!',
+        })
         return setIsWaitingTheCode(true)
       }
       if (data.status === 'AUTHORIZED') {
@@ -103,7 +105,11 @@ export function AuthClient({ redirectTo }: Props) {
             ) : (
               <>
                 <Fieldset label='Email' error={form.formState.errors.email?.message}>
-                  <Input {...form.register('email', { required: requiredField })} placeholder='Type your email' />
+                  <Input
+                    {...form.register('email', { required: requiredField })}
+                    autoComplete='off'
+                    placeholder='Type your email'
+                  />
                 </Fieldset>
                 {needRegister && (
                   <>
@@ -144,6 +150,13 @@ export function AuthClient({ redirectTo }: Props) {
               </>
             )}
           </motion.div>
+
+          {isWaitingTheCode && (
+            <p className='max-w-sm text-xs text-muted-foreground text-center'>
+              Check your <strong>email</strong> — including the <strong>spam</strong> or <strong>junk folder</strong> —
+              just in case!
+            </p>
+          )}
 
           <Button type='submit' className='w-full' loading={action.isPending}>
             {isWaitingTheCode && 'Validate code'}
