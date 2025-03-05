@@ -14,7 +14,8 @@ import { displayErrors } from '@/utils/action/client'
 import { categories } from '@/utils/categories'
 import { cn } from '@/utils/cn'
 import { Currency, currencies } from '@/utils/constants/currencies'
-import { MIN_PRODUCT_PRICE } from '@/utils/constants/pricing'
+import { MAX_PRODUCT_PRICE, MIN_PRODUCT_PRICE } from '@/utils/constants/pricing'
+import { formatCurrency } from '@/utils/currency'
 import { goToPreview } from '@/utils/fn'
 import { invalidValue, requiredField } from '@/utils/messages'
 import { ChevronDown } from 'lucide-react'
@@ -206,9 +207,11 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
                         return invalidValue
                       }
                       if (value < MIN_PRODUCT_PRICE / 100) {
-                        return `The min price is ${MIN_PRODUCT_PRICE / 100} dollars`
+                        return `The min price is ${formatCurrency(MIN_PRODUCT_PRICE, 'USD')}`
                       }
-                      return undefined
+                      if (value > MAX_PRODUCT_PRICE / 100) {
+                        return `The max price is ${formatCurrency(MAX_PRODUCT_PRICE, 'USD')}`
+                      }
                     },
                   })}
                   type='number'

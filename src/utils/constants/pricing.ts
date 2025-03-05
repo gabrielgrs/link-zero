@@ -1,3 +1,9 @@
-export const PLATFORM_FEE = 100
+// In cents
 
-export const MIN_PRODUCT_PRICE = 200
+const ONE_DOLLAR_IN_CENTS = 100
+
+export const PLATFORM_FEE = 1 * ONE_DOLLAR_IN_CENTS
+
+export const MIN_PRODUCT_PRICE = 2 * ONE_DOLLAR_IN_CENTS
+
+export const MAX_PRODUCT_PRICE = 10_000 * ONE_DOLLAR_IN_CENTS

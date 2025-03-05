@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang='en'>
       <body
-        className={` ${fontElement.className} antialiased bg-gradient-to-br from-background via-accent/10 to-background min-h-screen`}
+        className={` ${fontElement.className} antialiased bg-gradient-to-br from-background via-accent/10 dark:via-accent/10 to-background min-h-screen`}
       >
         <NextTopLoader color='hsl(var(--foreground))' showSpinner={true} />
         <ClientLayout>{children}</ClientLayout>

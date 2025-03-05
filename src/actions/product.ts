@@ -8,6 +8,7 @@ import { parseData } from '@/utils/action'
 import { getDomain, redirectToNotFound } from '@/utils/action/server'
 import { currencies } from '@/utils/constants/currencies'
 
+import { MAX_PRODUCT_PRICE, MIN_PRODUCT_PRICE } from '@/utils/constants/pricing'
 import { z } from 'zod'
 import { createServerAction } from 'zsa'
 import { authProcedure } from './procedures'
@@ -58,7 +59,11 @@ export const createProduct = authProcedure
       file: z.instanceof(File),
       name: z.string().nonempty(),
       currency: z.enum(currencies),
-      price: z.number().min(3).nonnegative(),
+      price: z
+        .number()
+        .min(MIN_PRODUCT_PRICE / 100)
+        .max(MAX_PRODUCT_PRICE / 100)
+        .nonnegative(),
       cover: z.instanceof(File).optional(),
     }),
   )
