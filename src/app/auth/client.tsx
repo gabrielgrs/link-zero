@@ -38,6 +38,7 @@ export function AuthClient({ redirectTo }: Props) {
         toast.info('Finish your register')
         return setNeedRegister(true)
       }
+
       if (data.status === 'WAITING_FOR_CODE') {
         toast.info('Check your email for the code', {
           description: 'Check the spam or junk folder — just in case!',
@@ -109,6 +110,7 @@ export function AuthClient({ redirectTo }: Props) {
                     {...form.register('email', { required: requiredField })}
                     autoComplete='off'
                     placeholder='Type your email'
+                    disabled={needRegister || isWaitingTheCode}
                   />
                 </Fieldset>
                 {needRegister && (

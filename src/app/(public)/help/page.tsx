@@ -5,6 +5,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CreditCard, Mail, Package, Share2 } from 'lucide-react'
+import ReactPlayer from 'react-player/youtube'
 
 export default function Page() {
   return (
@@ -14,7 +15,6 @@ export default function Page() {
           <h1 className='text-3xl font-medium'>Help Center</h1>
           <p className='text-muted-foreground mt-2'>Learn how to use our platform to sell your digital products.</p>
         </div>
-
         <Tabs defaultValue='getting-started' className='w-full'>
           <TabsList className='grid w-full grid-cols-4'>
             <TabsTrigger value='getting-started'>Login</TabsTrigger>
@@ -205,14 +205,17 @@ export default function Page() {
             </div>
           </TabsContent>
         </Tabs>
-
         <Separator />
-
         <div className='text-center'>
           <p className='text-muted-foreground mb-4'>Need additional help?</p>
           <Link href='/contact' className={buttonVariants()}>
             Contact Support
           </Link>
+        </div>
+        <Separator />
+        <div className='flex items-center justify-center gap-2 flex-col'>
+          <h2>App usage demo</h2>
+          <ReactPlayer url='https://www.youtube.com/watch?v=4WXpltF6_RU' />
         </div>
       </div>
     </div>
