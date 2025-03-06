@@ -3,7 +3,7 @@
 import { Link } from '@/components/link'
 import { Logo } from '@/components/logo'
 import { cn } from '@/utils/cn'
-import { ChartArea, Library, LogOut, LucideIcon, Moon, PackageSearch, Settings, Sun } from 'lucide-react'
+import { ChartArea, HelpCircle, Library, LogOut, LucideIcon, Moon, PackageSearch, Settings, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { usePathname } from 'next/navigation'
 import { ReactNode } from 'react'
@@ -67,6 +67,10 @@ export function Sidebar() {
 
           <NavItem href='/library' icon={Library}>
             Library
+          </NavItem>
+
+          <NavItem href='/help' icon={HelpCircle}>
+            Help center
           </NavItem>
 
           <NavItem onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} icon={theme === 'dark' ? Sun : Moon}>
