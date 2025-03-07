@@ -1,11 +1,7 @@
 import { getLandingPageData } from '@/actions/shared'
 import { HomeClient } from './client'
 
-// async function getProducts() {
-//   const [products, err] = await getRandomProducts()
-//   if (err) return []
-//   return products
-// }
+export const revalidate = 3_600 // 1 hour
 
 export default async function Page() {
   // const products = await getProducts()
