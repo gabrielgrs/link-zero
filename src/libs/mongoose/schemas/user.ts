@@ -51,7 +51,7 @@ export const user = createMongooseSchema<UserSchema>(
       stripeAccountId: {
         type: String,
         required: false,
-        unique: [true, 'Stripe account already exists'],
+        unique: false,
       },
     },
     {
