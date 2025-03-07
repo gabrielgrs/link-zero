@@ -1,6 +1,7 @@
 import { Column, Grid } from '@/components/grid'
 import { Link } from '@/components/link'
 import { ArrowLeft } from 'lucide-react'
+import { Confetti } from './confetti'
 
 type Props = {
   searchParams: Promise<{ type: 'success' | 'failure' }>
@@ -10,6 +11,7 @@ export default async function Subscription({ searchParams }: Props) {
 
   return (
     <main>
+      {type === 'success' && <Confetti />}
       <Grid>
         <Column size={12}>
           <h1>Subscription</h1>

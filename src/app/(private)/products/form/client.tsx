@@ -18,6 +18,7 @@ import { MAX_PRODUCT_PRICE, MIN_PRODUCT_PRICE } from '@/utils/constants/pricing'
 import { formatCurrency } from '@/utils/currency'
 import { goToPreview } from '@/utils/fn'
 import { invalidValue, requiredField } from '@/utils/messages'
+import confetti from 'canvas-confetti'
 import { ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Controller, useForm } from 'react-hook-form'
@@ -52,6 +53,11 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
 
   const action = useServerAction(isEdition ? updateProduct : createProduct, {
     onSuccess: () => {
+      confetti({
+        particleCount: 300,
+        spread: 70,
+        origin: { y: 0.6 },
+      })
       toast.success('Success!')
       push('/products')
     },
