@@ -20,7 +20,7 @@ export default async function Page({ searchParams }: Props) {
   return (
     <div className='space-y-14'>
       <Link href='/' className={cn(buttonVariants({ variant: 'outline' }), 'w-max')}>
-        <ArrowLeft size={16} /> Voltar para home
+        <ArrowLeft size={16} /> Back to home
       </Link>
 
       <Filters initialValues={{ searchText, category: category ? category.toUpperCase() : undefined }} />
