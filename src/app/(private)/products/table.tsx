@@ -1,6 +1,7 @@
 'use client'
 
 import { getAuthUserProducts, updateProductStatus } from '@/actions/product'
+import { linkAccount } from '@/actions/stripe'
 import { Column, Grid } from '@/components/grid'
 import { Link } from '@/components/link'
 import { Badge } from '@/components/ui/badge'
@@ -12,7 +13,8 @@ import { ServerActionResponse } from '@/utils/action'
 import { displayErrors } from '@/utils/action/client'
 import { cn } from '@/utils/cn'
 import { goToPreview } from '@/utils/fn'
-import { EllipsisVertical } from 'lucide-react'
+import { EllipsisVertical, TriangleAlert } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { useServerAction } from 'zsa-react'
@@ -30,6 +32,7 @@ function getStatusBadgeClassName(status: Props['products'][number]['status']) {
 
 export function ProductsTable({ products: initialProducts }: Props) {
   const { user } = useAuth()
+  const { push } = useRouter()
   const [products, setProducts] = useState(initialProducts)
 
   const updateProductStatusAction = useServerAction(updateProductStatus, {
@@ -40,19 +43,34 @@ export function ProductsTable({ products: initialProducts }: Props) {
     onError: (error) => displayErrors(error),
   })
 
+  const linkAccountAction = useServerAction(linkAccount, {
+    onSuccess: ({ data }) => {
+      push(data.url)
+    },
+  })
+
   return (
     <main>
       <Grid>
         <Column size={12} className='flex justify-between items-center gap-2'>
           <h1>Products</h1>
-          {user.stripeAccountId ? (
-            <Link href='/products/form' className={buttonVariants()}>
-              New product
-            </Link>
-          ) : (
-            <Button disabled>New product</Button>
-          )}
+          <Link href='/products/form' className={buttonVariants()} disabled={!user.stripeAccountId}>
+            New product
+          </Link>
         </Column>
+        {!user.stripeAccountId && (
+          <Column size={12} className='flex items-center justify-end text-yellow-500 text-sm gap-2'>
+            <Button
+              variant='link'
+              className='p-0 underline text-yellow-500 text-sm'
+              loading={linkAccountAction.isPending || linkAccountAction.isSuccess}
+              onClick={() => linkAccountAction.execute()}
+            >
+              <TriangleAlert size={16} />
+              To start selling, you need to link your stripe account by clicking here
+            </Button>
+          </Column>
+        )}
         <Column size={12}>
           <Table>
             <TableCaption>{products.length > 0 ? 'Products list' : 'No products found'}</TableCaption>
