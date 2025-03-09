@@ -5,6 +5,9 @@ const RATE_LIMIT_IN_MS = 1000
 const MAX_REQUESTS = 20
 const ipTracker = new Map<string, { count: number; startTime: number }>()
 
+const blackListRoutes: string[] = ['/wp-admin/setup-config.php', '/wordpress/wp-admin/setup-config.php']
+const blackListIps: string[] = []
+
 export async function middleware(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for') || 'unknown'
 
@@ -26,6 +29,12 @@ export async function middleware(request: NextRequest) {
   const { origin } = request.nextUrl
   const redirectTo = request.nextUrl.searchParams.get('redirectTo')
   const token = request.nextUrl.searchParams.get('token')
+
+  if (blackListRoutes.some((x) => request.url.includes(x))) blackListIps.push(ip)
+
+  if (blackListIps.includes(ip)) {
+    return NextResponse.json({ message: 'Bad request' }, { status: 400 })
+  }
 
   if (request.url.includes('/logout')) {
     const response = NextResponse.redirect(new URL(redirectTo || '/auth', origin))
