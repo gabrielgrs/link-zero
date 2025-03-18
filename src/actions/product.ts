@@ -14,6 +14,19 @@ import { createServerAction } from 'zsa'
 import { authProcedure } from './procedures'
 import { activeOrInactiveProductAndPrice, createProductAndPrice, updateProductAndPrice } from './stripe'
 
+export const getRandomProducts = createServerAction()
+  .input(z.object({ limit: z.number() }))
+  .handler(async ({ input }) => {
+    const products = await db.product
+      .find()
+      .limit(input.limit || 10)
+      .populate<{ user: UserSchema }>('user')
+      .lean()
+
+    // TODO: remove filter
+    return parseData(products.filter((x) => Boolean(x.user)))
+  })
+
 export const getProductBySlug = createServerAction()
   .input(z.object({ slug: z.string() }))
   .handler(async ({ input }) => {
@@ -230,7 +243,10 @@ export const updateProductStatus = authProcedure
 export const getProductsByUser = createServerAction()
   .input(z.object({ userId: z.string() }))
   .handler(async ({ input }) => {
-    const products = await db.product.find({ user: input.userId, status: 'PUBLISHED' }).lean()
+    const products = await db.product
+      .find({ user: input.userId, status: 'PUBLISHED' })
+      .populate<{ user: UserSchema }>('user')
+      .lean()
 
     return parseData(products)
   })

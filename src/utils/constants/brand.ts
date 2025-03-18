@@ -6,4 +6,4 @@ export const APP_DOMAIN = 'https://link-zero.store'
 
 export const CONTACT_EMAIL = 'grxgabriel@gmail.com'
 
-export const APP_DESCRIPTION = 'Make money doing what you love'
+export const APP_DESCRIPTION = 'The Best Place To Sell Digital Products'

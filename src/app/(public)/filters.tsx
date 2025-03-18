@@ -29,7 +29,7 @@ export function Filters({ initialValues = {} }: { initialValues?: { category?: s
 
         return push(`/store?${url.searchParams.toString()}`)
       })}
-      className='grid grid-cols-[auto,max-content,max-content] items-center gap-2 mx-auto max-w-4xl'
+      className='grid grid-cols-[auto,max-content,max-content] items-center gap-2 w-full'
     >
       <Input {...register('searchText')} placeholder='Search product' autoComplete='off' />
 

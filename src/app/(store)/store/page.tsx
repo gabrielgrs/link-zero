@@ -30,12 +30,7 @@ export default async function Page({ searchParams }: Props) {
       )}
       <div className='grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
         {products.map((product, index) => (
-          <ProductCard
-            key={product._id}
-            product={product}
-            user={{ username: product.user.username, name: product.user.name! }}
-            index={index}
-          />
+          <ProductCard key={product._id} product={product} index={index} />
         ))}
       </div>
     </div>

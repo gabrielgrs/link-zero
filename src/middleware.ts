@@ -27,6 +27,10 @@ export async function middleware(request: NextRequest) {
   const redirectTo = request.nextUrl.searchParams.get('redirectTo')
   const token = request.nextUrl.searchParams.get('token')
 
+  if (request.url.includes('.php')) {
+    return new NextResponse('Forbidden', { status: 403 })
+  }
+
   if (request.url.includes('/logout')) {
     const response = NextResponse.redirect(new URL(redirectTo || '/auth', origin))
 

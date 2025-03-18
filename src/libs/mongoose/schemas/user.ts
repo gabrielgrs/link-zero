@@ -23,6 +23,9 @@ export const user = createMongooseSchema<UserSchema>(
         required: [true, 'Email is required'],
         unique: [true, 'Slug already exists'],
         immutable: true,
+        trim: true,
+        lowercase: true,
+        match: [/\S+@\S+\.\S+/, 'Please use a valid email address'],
       },
       username: {
         type: String,
@@ -30,12 +33,14 @@ export const user = createMongooseSchema<UserSchema>(
         unique: [true, 'Username already exists'],
         minlength: [3, 'Username should be at least 3 characters long'],
         maxlength: [32, 'Username should be at most 32 characters long'],
+        trim: true,
       },
       name: {
         type: String,
         required: false,
         minlength: [3, 'Name should be at least 3 characters long'],
         maxlength: [32, 'Name should be at most 32 characters long'],
+        trim: true,
       },
       bio: {
         type: String,

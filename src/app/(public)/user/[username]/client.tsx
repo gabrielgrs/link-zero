@@ -36,8 +36,10 @@ export function UserClient({ user, products }: Props) {
                       price: product.price,
                       name: product.name,
                       slug: product.slug,
+                      user: product.user,
+                      category: product.category,
+                      description: product.description,
                     }}
-                    user={{ username: user.username, name: user.name! }}
                     index={index}
                   />
                 ))}
