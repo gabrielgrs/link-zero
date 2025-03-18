@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
 
   const link = await db.link.findOne({ _id: identifier }).populate<{ product: ProductSchema }>({
     path: 'product',
-    select: 'content',
+    select: 'content name',
   })
 
   if (!link?.product) return new NextResponse('File not found', { status: 404 })
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     status: 200,
     headers: {
       'Content-Type': mimeTypes[format],
-      'Content-Disposition': `inline; filename="arquivo.${format}"`, // Abre direto no navegador
+      'Content-Disposition': `inline; filename="${link.product.name}.${format}"`, // Abre direto no navegador
     },
   })
 }

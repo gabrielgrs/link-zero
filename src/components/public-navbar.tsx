@@ -25,7 +25,7 @@ function NavItems() {
 
 export function PublicNavbar() {
   return (
-    <header className='grid gap-1 shadow grid-cols-[auto,max-content,max-content] md:grid-cols-[180px,auto,180px] items-center px-4 border-foob backdrop-blur-lg z-50 h-16 sticky top-0 bg-background border-b'>
+    <header className='grid gap-1 shadow grid-cols-[auto,max-content] md:grid-cols-[180px,auto,180px] items-center px-4 border-foob backdrop-blur-lg z-50 h-16 sticky top-0 bg-background/50 border-b'>
       <Link href='/'>
         <Logo />
       </Link>
@@ -39,17 +39,17 @@ export function PublicNavbar() {
         <Link href='/auth' className={cn(buttonVariants({ variant: 'accent' }), 'group')}>
           Sign up
         </Link>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className='flex sm:hidden'>
+              <Menu />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <NavItems />
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button className='flex sm:hidden'>
-            <Menu />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <NavItems />
-        </DropdownMenuContent>
-      </DropdownMenu>
     </header>
   )
 }

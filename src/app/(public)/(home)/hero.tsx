@@ -16,18 +16,18 @@ export function Hero() {
             <h1 className='text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl text-[#2d2a0f]'>
               {APP_DESCRIPTION}
             </h1>
-            <div className='flex flex-col items-center justify-center gap-4 py-8 md:flex-row'>
+            <div className='flex flex-col items-center justify-center gap-4 py-8 md:flex-row text-base'>
               <div className='flex items-center gap-2'>
-                <Check className='h-5 w-5 text-lime-500' />
-                <span className='text-base md:text-lg'>100% Free to use</span>
+                <Check className='h-5 w-5 text-accent' />
+                <span>100% Free to use</span>
               </div>
               <div className='flex items-center gap-2'>
-                <Check className='h-5 w-5 text-lime-500' />
-                <span className='text-base md:text-lg'>Own store</span>
+                <Check className='h-5 w-5 text-accent' />
+                <span>Own store</span>
               </div>
               <div className='flex items-center gap-2'>
-                <Check className='h-5 w-5 text-lime-500' />
-                <span className='text-base md:text-lg'>Global marketplace</span>
+                <Check className='h-5 w-5 text-accent' />
+                <span>Global marketplace</span>
               </div>
             </div>
             <div className='mx-auto max-w-[600px] py-4'>

@@ -3,7 +3,7 @@ import { copy, del, put } from '@vercel/blob'
 
 const SUFIX = process.env.VERCEL_ENV !== 'production' ? 'dev' : ''
 
-const BUCKET = `${APP_NAME}-${SUFIX}`
+const BUCKET = `${APP_NAME.replace(' ', '').toLowerCase()}-${SUFIX}`
 
 export const uploadFile = (file: File) =>
   put(`${BUCKET}/${file.name}`, file, { access: 'public', token: process.env.BLOB_READ_WRITE_TOKEN })
