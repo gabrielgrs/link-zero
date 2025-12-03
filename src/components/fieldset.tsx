@@ -5,7 +5,7 @@ import { Label } from './ui/label'
 
 type FieldsetProps = {
   children: ReactNode
-  label: string
+  label?: string
   error?: string
   info?: ReactNode
   tooltip?: ReactNode
@@ -15,7 +15,7 @@ export function Fieldset({ children, label, error, info, tooltip }: FieldsetProp
   return (
     <fieldset className='relative'>
       <div className='flex items-center gap-2 mb-1'>
-        <Label>{label}</Label>
+        {label && <Label>{label}</Label>}
         {tooltip && (
           <TooltipProvider>
             <Tooltip>

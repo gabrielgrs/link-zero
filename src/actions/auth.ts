@@ -74,7 +74,7 @@ export const authenticate = createServerAction()
         const sessionTime = dayjs(session.createdAt)
         const diffTime = currentTime.diff(sessionTime, 'seconds')
 
-        const SECONDS_BEFORE_NEW_TRY = 180
+        const SECONDS_BEFORE_NEW_TRY = 60
 
         if (diffTime < SECONDS_BEFORE_NEW_TRY) {
           throw new Error(`Wait ${SECONDS_BEFORE_NEW_TRY - diffTime} seconds before trying again`)

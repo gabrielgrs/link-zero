@@ -25,7 +25,6 @@ export const createProductAndPrice = authProcedure
       currency: z.enum(currencies),
       name: z.string(),
       description: z.string().optional(),
-      cover: z.string().optional(),
       price: z.number(),
     }),
   )
@@ -33,7 +32,6 @@ export const createProductAndPrice = authProcedure
     const createdProduct = await createProduct({
       name: input.name,
       description: input.description,
-      images: input.cover,
     })
 
     const createdPrice = await createPrice(createdProduct.id, {
@@ -53,7 +51,6 @@ export const updateProductAndPrice = authProcedure
     z.object({
       name: z.string().nonempty(),
       description: z.string().optional(),
-      cover: z.string().optional(),
       stripeProductId: z.string().nonempty(),
       stripePriceId: z.string().nonempty(),
     }),
@@ -62,7 +59,6 @@ export const updateProductAndPrice = authProcedure
     await updateProduct(input.stripeProductId, {
       name: input.name,
       description: input.description,
-      image: input.cover,
     })
 
     await updatePrice(input.stripePriceId, {

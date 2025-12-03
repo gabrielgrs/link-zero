@@ -2,54 +2,53 @@
 
 import { Link } from '@/components/link'
 import { Logo } from '@/components/logo'
-import { buttonVariants } from '@/components/ui/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { cn } from '@/utils/cn'
-import { Menu } from 'lucide-react'
+import { Sun } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { ReactNode, useEffect, useState } from 'react'
 
-function NavItems() {
+const navItemClass = 'h-full px-4 md:px-8 hover:bg-primary hover:text-primary-foreground duration-500'
+
+function NavItem({ children, href, className }: { children: ReactNode; href: string; className?: string }) {
   return (
-    <>
-      <Link href='/contact' className={cn(buttonVariants({ variant: 'ghost' }))}>
-        Contact
-      </Link>
-      <Link href='/store' className={cn(buttonVariants({ variant: 'ghost' }))}>
-        Store
-      </Link>
-      <Link href='/help' className={cn(buttonVariants({ variant: 'ghost' }))}>
-        Help
-      </Link>
-    </>
+    <Link href={href} className={cn(navItemClass, className)}>
+      {children}
+    </Link>
   )
 }
 
 export function PublicNavbar() {
+  const { theme, setTheme } = useTheme()
+  const [distanceFromTop, setDistanceFromTop] = useState(0)
+
+  useEffect(() => {
+    const handleScroll = () => setDistanceFromTop(window.scrollY)
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   return (
-    <header className='grid gap-1 shadow grid-cols-[auto,max-content] md:grid-cols-[180px,auto,180px] items-center px-4 border-foob backdrop-blur-lg z-50 h-16 sticky top-0 bg-background/50 border-b'>
-      <Link href='/'>
+    <header
+      className={cn(
+        'flex justify-between gap-1 items-center border-foob backdrop-blur-lg z-50 sticky top-0 bg-background/50 border-b duration-500',
+        distanceFromTop < 100 ? 'h-24' : 'h-16',
+      )}
+    >
+      <Link href='/' className='pl-8'>
         <Logo />
       </Link>
-      <nav className='items-center justify-center hidden md:flex'>
-        <NavItems />
-      </nav>
-      <div className='flex items-center gap-1'>
-        <Link href='/auth' className={cn(buttonVariants({ variant: 'ghost' }), 'group')}>
+      <nav className='flex items-center h-full'>
+        <NavItem href='/contact'>Contact</NavItem>
+        <NavItem href='/store'>Store</NavItem>
+        <NavItem href='/help'>Help</NavItem>
+        <button type='button' onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className={navItemClass}>
+          <Sun />
+        </button>
+        <NavItem href='/auth' className='bg-primary text-primary-foreground'>
           Log in
-        </Link>
-        <Link href='/auth' className={cn(buttonVariants({ variant: 'accent' }), 'group')}>
-          Sign up
-        </Link>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className='flex sm:hidden'>
-              <Menu />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <NavItems />
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+        </NavItem>
+      </nav>
     </header>
   )
 }

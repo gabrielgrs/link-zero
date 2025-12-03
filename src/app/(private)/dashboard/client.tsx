@@ -2,6 +2,7 @@
 
 import { Column, Grid } from '@/components/grid'
 import { Link } from '@/components/link'
+import { Title } from '@/components/title'
 import { useAuth } from '@/hooks/use-auth'
 import { ProductSchema } from '@/libs/mongoose/schemas/product'
 import { formatCurrency } from '@/utils/currency'
@@ -41,7 +42,9 @@ export function DashboardClient({ sales }: { sales: ProductSchema['sales'] }) {
   return (
     <main>
       <Grid>
-        <Column size={12}>{user.name ? <h1>Hello, {user.name.split(' ').at(0)}! 👋</h1> : <h1>Hello! 👋</h1>}</Column>
+        <Column size={12}>
+          {user.name ? <Title>Hello, {user.name.split(' ').at(0)}! 👋</Title> : <Title>Hello! 👋</Title>}
+        </Column>
 
         <Column size={6}>
           <InfoCard

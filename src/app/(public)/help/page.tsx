@@ -1,6 +1,7 @@
 'use client'
 
 import { Link } from '@/components/link'
+import { Title } from '@/components/title'
 import { buttonVariants } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -12,7 +13,7 @@ export default function Page() {
     <div className='container mx-auto py-12 px-4 max-w-3xl'>
       <div className='space-y-10'>
         <div>
-          <h1 className='text-3xl font-medium'>Help Center</h1>
+          <Title>Help Center</Title>
           <p className='text-muted-foreground mt-2'>Learn how to use our platform to sell your digital products.</p>
         </div>
         <Tabs defaultValue='getting-started' className='w-full'>

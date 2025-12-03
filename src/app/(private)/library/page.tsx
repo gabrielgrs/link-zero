@@ -1,6 +1,7 @@
 import { getUserLibraryProducts } from '@/actions/product'
 import { Column, Grid } from '@/components/grid'
 import { Link } from '@/components/link'
+import { Title } from '@/components/title'
 import { buttonVariants } from '@/components/ui/button'
 // import { Button } from '@/components/ui/button'
 // import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -19,7 +20,7 @@ export default async function Page() {
       <Grid>
         <Column size={12} className='flex justify-between items-center gap-2'>
           <div>
-            <h1>Library</h1>
+            <Title>Library</Title>
             <p className='text-muted-foreground text-sm'>My list of products</p>
           </div>
           <Link href='/store' className={buttonVariants()}>

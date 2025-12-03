@@ -2,6 +2,7 @@
 
 import { Link } from '@/components/link'
 import { Logo } from '@/components/logo'
+import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/utils/cn'
 import { ChartArea, HelpCircle, Library, LogOut, LucideIcon, Moon, PackageSearch, Settings, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
@@ -49,6 +50,8 @@ function NavItem({
 
 export function Sidebar() {
   const { theme, setTheme } = useTheme()
+  const { user } = useAuth()
+  // user.stripeAccountId
 
   return (
     <aside className='h-screen border-r sticky top-0'>
@@ -61,9 +64,11 @@ export function Sidebar() {
             Dashboard
           </NavItem>
 
-          <NavItem href='/products' icon={PackageSearch}>
-            Products
-          </NavItem>
+          {user.stripeAccountId && (
+            <NavItem href='/products' icon={PackageSearch}>
+              Products
+            </NavItem>
+          )}
 
           <NavItem href='/library' icon={Library}>
             Library

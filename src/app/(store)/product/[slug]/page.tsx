@@ -1,5 +1,5 @@
 import { getProductBySlug } from '@/actions/product'
-import { generateMetadata as generateMetadataFn, thumbImage } from '@/utils/metadata'
+import { generateMetadata as generateMetadataFn } from '@/utils/metadata'
 import { Metadata } from 'next'
 import { ProductClient } from '../client'
 
@@ -15,11 +15,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ...initialMetadata,
     openGraph: {
       ...initialMetadata.openGraph,
-      images: [product.cover || thumbImage],
     },
     twitter: {
       ...initialMetadata.twitter,
-      images: [product.cover || thumbImage],
     },
   }
 }

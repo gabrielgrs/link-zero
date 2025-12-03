@@ -1,4 +1,5 @@
-import { Eye, Trash } from 'lucide-react'
+import { Eye, Trash, Upload } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 
@@ -12,7 +13,7 @@ type Props = {
 
 export function FileUpload({ value, onChange, accept, placeholder = 'Upload a file', maxMb }: Props) {
   return (
-    <div className='relative h-10 w-full flex items-center border-2 dashed bg-background rounded-lg px-2 text-sm'>
+    <div className='relative w-full flex flex-col py-10 gap-8 items-center border-2 dashed bg-foreground/5 hover:bg-foreground/10 duration-500 rounded-lg px-2 text-sm'>
       {value ? (
         <div className='flex items-center justify-between w-full'>
           <Link
@@ -28,13 +29,14 @@ export function FileUpload({ value, onChange, accept, placeholder = 'Upload a fi
               <Eye size={16} />
             </Link>
 
-            <button type='button' onClick={() => onChange(null)}>
+            <button type='button' onClick={() => onChange(null)} className='text-destructive'>
               <Trash size={16} />
             </button>
           </div>
         </div>
       ) : (
         <>
+          <Upload size={40} className='text-muted-foreground' />
           <input
             className='absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer'
             accept={accept}
@@ -51,9 +53,22 @@ export function FileUpload({ value, onChange, accept, placeholder = 'Upload a fi
             }}
             type='file'
           />
-          <p className='flex items-center justify-center h-full w-full duration-500 text-muted-foreground hover:text-primary'>
-            {placeholder}
-          </p>
+          <AnimatePresence>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
+              <p className='flex items-center justify-center h-full w-full duration-500 text-muted-foreground hover:text-primary'>
+                {placeholder}
+              </p>
+              {accept && (
+                <p className='text-xs text-muted-foreground text-center mx-auto max-w-lg'>
+                  Aceppted formats:{' '}
+                  {accept
+                    .split(' ')
+                    .map((format) => format.split('/').at(-1))
+                    .join(', ')}
+                </p>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </>
       )}
     </div>

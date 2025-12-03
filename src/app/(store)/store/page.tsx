@@ -1,5 +1,5 @@
 import { getProductsByQuery } from '@/actions/product'
-import { Filters } from '@/app/(public)/filters'
+import { ProductSearch } from '@/app/(public)/product-search'
 import { Link } from '@/components/link'
 import { ProductCard } from '@/components/product-card'
 import { buttonVariants } from '@/components/ui/button'
@@ -7,12 +7,11 @@ import { cn } from '@/utils/cn'
 import { ArrowLeft } from 'lucide-react'
 
 type Props = {
-  searchParams: Promise<{ searchText?: string; category?: string }>
+  searchParams: Promise<{ searchText?: string }>
 }
 export default async function Page({ searchParams }: Props) {
-  const { searchText, category } = await searchParams
+  const { searchText } = await searchParams
   const [products, error] = await getProductsByQuery({
-    category: category ? category.toUpperCase() : '',
     searchText,
   })
   if (error) throw error
@@ -23,10 +22,10 @@ export default async function Page({ searchParams }: Props) {
         <ArrowLeft size={16} /> Back to home
       </Link>
 
-      <Filters initialValues={{ searchText, category: category ? category.toUpperCase() : undefined }} />
+      <ProductSearch initialValues={{ searchText }} />
 
       {products.length === 0 && (
-        <p className='text-lg text-muted-foreground text-center'>Nothing found. Try another category!</p>
+        <p className='text-lg text-muted-foreground text-center'>Nothing found. Try another search!</p>
       )}
       <div className='grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'>
         {products.map((product, index) => (

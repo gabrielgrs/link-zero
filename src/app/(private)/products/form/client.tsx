@@ -3,15 +3,14 @@
 import { createProduct, generateDownloadUrl, updateProduct } from '@/actions/product'
 import { Fieldset } from '@/components/fieldset'
 import { Column, Grid } from '@/components/grid'
+import { Title } from '@/components/title'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { mimeTypes } from '@/libs/mongoose/schemas/product'
 import { displayErrors } from '@/utils/action/client'
-import { categories } from '@/utils/categories'
 import { cn } from '@/utils/cn'
 import { Currency, currencies } from '@/utils/constants/currencies'
 import { MAX_PRODUCT_PRICE, MIN_PRODUCT_PRICE } from '@/utils/constants/pricing'
@@ -22,7 +21,6 @@ import confetti from 'canvas-confetti'
 import { ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Controller, useForm } from 'react-hook-form'
-import slugify from 'slugify'
 import { toast } from 'sonner'
 import { useServerAction } from 'zsa-react'
 import { FileUpload } from './file-upload'
@@ -37,10 +35,7 @@ const defaultValues = {
   name: '',
   description: '',
   price: 0,
-  category: '',
   currency: Object.values(currencies)[0] as Currency,
-  slug: '',
-  cover: '' as string | File,
   file: '' as string | File,
 }
 
@@ -81,7 +76,17 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
       >
         <Grid>
           <Column size={12}>
-            <h1>{isEdition ? 'Update' : 'New'} product</h1>
+            <Title>{isEdition ? 'Update' : 'New'} product</Title>
+          </Column>
+
+          <Column size={12}>
+            <Fieldset error={formState.errors.name?.message}>
+              <input
+                {...register('name', { required: requiredField })}
+                placeholder='Product name'
+                className='w-full bg-transparent focus:outline-none focus:bg-none focus:ring-0 duration-500 text-2xl py-2'
+              />
+            </Fieldset>
           </Column>
 
           {isEdition && initialValues?._id && (
@@ -100,7 +105,7 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
 
           {!isEdition && (
             <>
-              <Column size={4}>
+              <Column size={12}>
                 <Fieldset
                   label='Content'
                   error={formState.errors.file?.message}
@@ -126,22 +131,10 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
                   />
                 </Fieldset>
               </Column>
-
-              <Column size={8} className='flex items-center h-full'>
-                <p className={cn('text-xs text-muted-foreground')}>
-                  Aceppted formats: {Object.keys(mimeTypes).join(', ')}
-                </p>
-              </Column>
             </>
           )}
 
-          <Column size={4}>
-            <Fieldset label='Name' error={formState.errors.name?.message}>
-              <Input {...register('name', { required: requiredField })} placeholder='Type the product name' />
-            </Fieldset>
-          </Column>
-
-          <Column size={4}>
+          {/* <Column size={4}>
             <Fieldset
               label='Slug (product alias)'
               error={formState.errors.name?.message}
@@ -171,7 +164,7 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
                 }}
               />
             </Fieldset>
-          </Column>
+          </Column> */}
 
           <Column size={4}>
             <Fieldset
@@ -225,55 +218,6 @@ export function ProductForm({ initialValues }: { storageKey?: string; initialVal
                   className='pl-16'
                 />
               </div>
-            </Fieldset>
-          </Column>
-
-          <Column size={4}>
-            <Fieldset label='Category' error={formState.errors.category?.message}>
-              <Controller
-                control={control}
-                rules={{ required: requiredField }}
-                name='category'
-                render={({ field }) => {
-                  return (
-                    <Select onValueChange={(e) => field.onChange(e)} value={field.value}>
-                      <SelectTrigger hasValue={Boolean(field.value)} className={cn('w-full')}>
-                        <SelectValue placeholder='Select' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(categories).map(([key, value]) => {
-                          return (
-                            <SelectItem key={key} value={key}>
-                              {value}
-                            </SelectItem>
-                          )
-                        })}
-                      </SelectContent>
-                    </Select>
-                  )
-                }}
-              />
-            </Fieldset>
-          </Column>
-
-          <Column size={8}>
-            <Fieldset label='Cover' error={formState.errors.cover?.message} info='Max of 2mb'>
-              <Controller
-                control={control}
-                name='cover'
-                render={({ field }) => {
-                  return (
-                    <FileUpload
-                      maxMb={2}
-                      value={field.value}
-                      onChange={(e) => {
-                        field.onChange(e)
-                      }}
-                      accept='image/*'
-                    />
-                  )
-                }}
-              />
             </Fieldset>
           </Column>
 

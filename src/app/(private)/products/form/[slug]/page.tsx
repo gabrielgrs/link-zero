@@ -13,14 +13,11 @@ export default async function Page({ params }: Props) {
     <ProductForm
       initialValues={{
         _id: product._id,
-        category: product.category,
         currency: product.currency,
         description: product.description,
         name: product.name,
         price: product.price,
-        slug: product.slug,
         file: '',
-        cover: product.cover ?? '',
       }}
     />
   )

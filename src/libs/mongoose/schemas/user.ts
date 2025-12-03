@@ -50,8 +50,8 @@ export const user = createMongooseSchema<UserSchema>(
       },
       stripeCustomerId: {
         type: String,
-        required: true,
-        unique: true,
+        required: false,
+        unique: false,
       },
       stripeAccountId: {
         type: String,

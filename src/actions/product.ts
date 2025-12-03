@@ -9,6 +9,7 @@ import { getDomain, redirectToNotFound } from '@/utils/action/server'
 import { currencies } from '@/utils/constants/currencies'
 
 import { MAX_PRODUCT_PRICE, MIN_PRODUCT_PRICE } from '@/utils/constants/pricing'
+import slugify from 'slugify'
 import { z } from 'zod'
 import { createServerAction } from 'zsa'
 import { authProcedure } from './procedures'
@@ -66,8 +67,6 @@ async function getContent(file: File) {
 export const createProduct = authProcedure
   .input(
     z.object({
-      slug: z.string().nonempty(),
-      category: z.string().nonempty(),
       description: z.string().nonempty(),
       file: z.instanceof(File),
       name: z.string().nonempty(),
@@ -77,22 +76,19 @@ export const createProduct = authProcedure
         .min(MIN_PRODUCT_PRICE / 100)
         .max(MAX_PRODUCT_PRICE / 100)
         .nonnegative(),
-      cover: z.instanceof(File).optional(),
     }),
   )
   .handler(async ({ ctx, input }) => {
     let contentUrl = ''
-    let coverUrl = ''
 
     try {
       if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
 
       const content = await getContent(input.file)
-      const cover = input.cover ? await uploadFile(input.cover).then((res) => res.url) : null
 
       const product = await db.product.create({
         ...input,
-        cover,
+        slug: slugify(input.name, { lower: true }),
         content,
         user: ctx.user._id,
       })
@@ -100,7 +96,6 @@ export const createProduct = authProcedure
       return parseData(product)
     } catch (error) {
       if (contentUrl) await removeFile(contentUrl)
-      if (coverUrl) await removeFile(coverUrl)
 
       throw error
     }
@@ -110,56 +105,31 @@ export const updateProduct = authProcedure
   .input(
     z.object({
       _id: z.string().nonempty(),
-      slug: z.string().nonempty(),
-      category: z.string().nonempty(),
       description: z.string().nonempty(),
       name: z.string().nonempty(),
-      cover: z.union([z.instanceof(File), z.string()]).optional(),
     }),
   )
   .handler(async ({ ctx, input }) => {
-    let newCover: string | undefined = ''
+    if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
 
-    try {
-      if (!ctx.user.stripeAccountId) throw new Error('User is not connected to stripe')
+    const product = await db.product.findOneAndUpdate({ _id: input._id, user: ctx.user._id })
+    if (!product) throw new Error('Not found')
 
-      const { _id, ...rest } = input
-
-      if (input.cover instanceof File) {
-        const product = await db.product.findOne({ _id, user: ctx.user._id }).lean()
-        if (product?.cover) await removeFile(product.cover)
-      }
-
-      newCover = input.cover instanceof File ? await uploadFile(input.cover).then((res) => res.url) : input.cover
-
-      const product = await db.product.findOneAndUpdate(
-        { _id, user: ctx.user._id },
-        newCover ? { ...rest, cover: newCover } : rest,
-      )
-      if (!product) throw new Error('Not found')
-
-      if (product.stripePriceId && product.stripeProductId) {
-        const [, err] = await updateProductAndPrice({
-          stripeProductId: product.stripeProductId,
-          stripePriceId: product.stripePriceId,
-          name: input.name,
-          description: input.description,
-          cover: newCover,
-        })
-        if (err) throw err
-      }
-
-      return parseData(input)
-    } catch (error) {
-      if (input.cover instanceof File && newCover && typeof newCover === 'string') {
-        await removeFile(newCover)
-      }
-      throw error
+    if (product.stripePriceId && product.stripeProductId) {
+      const [, err] = await updateProductAndPrice({
+        stripeProductId: product.stripeProductId,
+        stripePriceId: product.stripePriceId,
+        name: input.name,
+        description: input.description,
+      })
+      if (err) throw err
     }
+
+    return parseData(input)
   })
 
 export const getProductsByQuery = createServerAction()
-  .input(z.object({ searchText: z.string().optional(), category: z.string().optional() }))
+  .input(z.object({ searchText: z.string().optional() }))
   .handler(async ({ input }) => {
     const query: Record<string, unknown> = {
       status: 'PUBLISHED',
@@ -167,10 +137,6 @@ export const getProductsByQuery = createServerAction()
 
     if (input.searchText) {
       query.name = { $regex: input.searchText, $options: 'i' }
-    }
-
-    if (input.category) {
-      query.category = input.category
     }
 
     const products = await db.product
@@ -207,7 +173,6 @@ export const updateProductStatus = authProcedure
 
       if (!product.stripePriceId && !product.stripeProductId) {
         const [res, err] = await createProductAndPrice({
-          cover: product.cover,
           currency: product.currency,
           name: product.name,
           description: product.description,

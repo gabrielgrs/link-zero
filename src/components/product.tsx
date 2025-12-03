@@ -2,12 +2,9 @@
 
 import { ProductSchema } from '@/libs/mongoose/schemas/product'
 import { UserSchema } from '@/libs/mongoose/schemas/user'
-import { categories } from '@/utils/categories'
-import { cn } from '@/utils/cn'
 import { APP_NAME } from '@/utils/constants/brand'
 import { formatCurrency } from '@/utils/currency'
 import { Copy, Dot, Facebook, Flame, Twitter } from 'lucide-react'
-import Image from 'next/image'
 import { toast } from 'sonner'
 import { Link } from './link'
 import { Button } from './ui/button'
@@ -26,11 +23,9 @@ type Props = Omit<
 
 export function Product({
   name,
-  cover,
   price,
   user,
   description,
-  category,
   currency,
   onSubmit,
   isSubmitting,
@@ -48,17 +43,6 @@ export function Product({
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
       <div className='space-y-8'>
-        {cover && (
-          <div className={cn('relative h-[240px] bg-foreground/5 w-full')}>
-            <Image
-              src={cover}
-              alt={name}
-              fill
-              className='rounded-lg'
-              style={{ objectFit: 'cover', objectPosition: 'center', backgroundSize: '100%' }}
-            />
-          </div>
-        )}
         <div>
           <Label>Description</Label>
           <p
@@ -76,12 +60,6 @@ export function Product({
           >
             @{user.username} <Dot /> <span className='underline underline-offset-4'>View profile</span>
           </Link>
-        </div>
-
-        <div>
-          <Label>Category</Label>
-          <br />
-          <p className='text-muted-foreground'>{categories[category]}</p>
         </div>
 
         <div className='sticky bottom-4 backdrop-blur-lg'>
@@ -132,51 +110,5 @@ export function Product({
         </div>
       </div>
     </div>
-    // <div className={cn('border shadow', className)}>
-    //   <div
-    //     className={cn('h-40 bg-foreground/5 w-full')}
-    //     style={{
-    //       backgroundImage: `url(${cover})`,
-    //       objectFit: 'cover',
-    //       objectPosition: 'center',
-    //       backgroundSize: '100%',
-    //     }}
-    //   />
-    //   <div className={cn('h-20 flex items-center pl-8 border', 'pl-0 justify-center')}>
-    //     <h1>{name}</h1>
-    //   </div>
-    //   <div className={cn('grid grid-cols-1 md:grid-cols-[auto,320px]')}>
-    //     <div>
-    //       <div className='grid grid-cols-[max-content,auto] border-b'>
-    //         <div className='border-r p-4'>
-    //           {price && currency
-    //             ? Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(
-    //                 price / 100,
-    //               )
-    //             : 'Free'}
-    //         </div>
-    //         <div className='p-4 text-muted-foreground'>
-    //           <Link href={`/user/${user.username}`}>{user.name}</Link>
-    //         </div>
-    //       </div>
-    //       {description && <p className='p-4'>{description}</p>}
-    //     </div>
-    //     <div className='border-l space-y-4 py-2'>
-    //       <div>
-    //         {category && (
-    //           <p className='flex p-2 text-sm justify-between items-center'>
-    //             <strong>Category</strong> {categories[category]}
-    //           </p>
-    //         )}
-    //       </div>
-
-    //       <div className='px-2'>
-    //         <Button type='button' className='w-full' disabled={isPreview} loading={isSubmitting} onClick={onSubmit}>
-    //           Buy now for just {formatCurrency(price, currency)}
-    //         </Button>
-    //       </div>
-    //     </div>
-    //   </div>
-    // </div>
   )
 }

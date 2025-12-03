@@ -4,6 +4,7 @@ import { getAuthUserProducts, updateProductStatus } from '@/actions/product'
 import { linkAccount } from '@/actions/stripe'
 import { Column, Grid } from '@/components/grid'
 import { Link } from '@/components/link'
+import { Title } from '@/components/title'
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -53,7 +54,7 @@ export function ProductsTable({ products: initialProducts }: Props) {
     <main>
       <Grid>
         <Column size={12} className='flex justify-between items-center gap-2'>
-          <h1>Products</h1>
+          <Title>Products</Title>
           <Link href='/products/form' className={buttonVariants()} disabled={!user.stripeAccountId}>
             New product
           </Link>

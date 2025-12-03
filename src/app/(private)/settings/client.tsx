@@ -4,6 +4,7 @@ import { getUserByUsername, updateUser } from '@/actions/auth'
 import { linkAccount } from '@/actions/stripe'
 import { Fieldset } from '@/components/fieldset'
 import { Column, Grid } from '@/components/grid'
+import { Title } from '@/components/title'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -45,7 +46,7 @@ export function SettingsClient({ user }: { user: ServerActionResponse<typeof get
       >
         <Grid>
           <Column size={12}>
-            <h1>Settings</h1>
+            <Title>Settings</Title>
           </Column>
 
           <Column size={6}>

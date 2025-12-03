@@ -48,7 +48,6 @@ export type ProductSchema = {
   _id: string
   name: string
   slug: string
-  cover?: string
   currency: Currency
   price: number
   description: string
@@ -97,10 +96,6 @@ export const product = createMongooseSchema<ProductSchema>(
       name: {
         type: String,
         required: [true, 'Name is required'],
-      },
-      cover: {
-        type: String,
-        required: false,
       },
       currency: {
         type: String,
